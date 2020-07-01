@@ -1,0 +1,69 @@
+{
+  "_from": "react-native-weekly-calendar",
+  "_id": "react-native-weekly-calendar@0.2.0",
+  "_inBundle": false,
+  "_integrity": "sha512-F8nGekXSsKln+QbSSNFr5h1Qwz+m88baP8zu85gKzo0gkvOkj4TJoDHpa2/tI87RyUL/B1FahnK15r/F0WMbBA==",
+  "_location": "/react-native-weekly-calendar",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "react-native-weekly-calendar",
+    "name": "react-native-weekly-calendar",
+    "escapedName": "react-native-weekly-calendar",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/react-native-weekly-calendar/-/react-native-weekly-calendar-0.2.0.tgz",
+  "_shasum": "74e247fb7bdae56229b5045d531662352dfbb14e",
+  "_spec": "react-native-weekly-calendar",
+  "_where": "/mnt/c/Users/Josh/Documents/GitHub/fitverseapp",
+  "author": {
+    "name": "Minjae Oak"
+  },
+  "bugs": {
+    "url": "https://github.com/minsanity6/react-native-weekly-calendar/issues"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "@react-native-community/datetimepicker": "~2.3.0",
+    "moment": "^2.24.0",
+    "prop-types": "^15.5.7"
+  },
+  "deprecated": false,
+  "description": "Weekly Calendar component for React Native",
+  "devDependencies": {
+    "metro-react-native-babel-preset": "^0.58.0",
+    "react": "~16.9.0",
+    "react-native": "0.61.4"
+  },
+  "homepage": "https://github.com/minsanity6/react-native-weekly-calendar#readme",
+  "keywords": [
+    "react",
+    "reactnative",
+    "react-native",
+    "react-native-component",
+    "calendar",
+    "weeklycalendar",
+    "weekly-calendar",
+    "scheduler",
+    "datepicker",
+    "date-picker"
+  ],
+  "license": "MIT",
+  "main": "index.js",
+  "name": "react-native-weekly-calendar",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/minsanity6/react-native-weekly-calendar.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "0.2.0"
+}

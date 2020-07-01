@@ -14,4 +14,4 @@ const Input = () => {
 	);
 };
 
-export default MyComponent;
+export default Input;
