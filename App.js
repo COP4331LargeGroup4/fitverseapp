@@ -26,9 +26,7 @@ const DashboardRoute = () =>
 			style={styles.container}
 		/>
 		<DashboardCalendar />
-		<Text>Dashboard</Text>
-		<Text>Route</Text>
-		<Text>test</Text>
+
 	</View >;
 
 const CalendarRoute = () => 
