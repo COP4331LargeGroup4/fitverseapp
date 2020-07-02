@@ -18,7 +18,7 @@ const width = Dimensions.get('window').width;
 //<Image source={require('./assets/logo.png')} style={{ alignContent:'center', resizeMode:'center', width: (width * .8) }} />
 
 const DashboardRoute = () => 
-	<View style={SafeViewAndroid.ViewWindow}>
+	<View >
 		<Logo 
 			width='100%'
 			height='20%'
@@ -30,19 +30,19 @@ const DashboardRoute = () =>
 	</View >;
 
 const CalendarRoute = () => 
-	<View style={SafeViewAndroid.ViewWindow}>
+	<View >
 		<PageCalendar />
 	</View >;
 
 const RecentsRoute = () => 
-	<View style={SafeViewAndroid.ViewWindow}>
+	<View >
 		<Text>Recents</Text>
 		<Text>Route</Text>
 		<Text>test</Text>
 	</View >;
 
 const ProfileRoute = () => 
-	<View style={SafeViewAndroid.ViewWindow}>
+	<View >
 		<Profile />
 	</View >;
 

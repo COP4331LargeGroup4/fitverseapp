@@ -1,7 +1,7 @@
-import React, { Component, useState, useRef, useEffect } from 'react';
+import React, { Component, useState, useEffect, useRef } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Checkbox, IconButton } from 'react-native-paper';
-import CalendarStrip from 'react-native-calendar-strip';
+import { Checkbox, IconButton, Button } from 'react-native-paper';
+import CalendarStrip from 'react-native-slideable-calendar-strip';
 
 import { Dimensions, Text } from 'react-native';
 import moment from 'moment';
@@ -11,54 +11,77 @@ import moment from 'moment';
 
 
 export function DashboardCalendar() {
-	const headerRef = useRef(null);
-	const [selDate, setSelDate] = useState(moment());
-	const [selDateStarting, setSelDateStarting] = useState(moment().startOf('week'));
+	const CalRef = useRef(null);
+
+	var dayToAdd = moment().format('YYYY-MM-DD')
+
+	var myEventsList = [
+        {
+            title: 'Chest and Triceps',
+            date: '2020-06-29',
+            //startRecur: currentEvent.repeat.length ? '2020-06-23' : '',
+            //endRecur: '',
+            //daysOfWeek: currentEvent.repeat.length ? currentEvent.repeat : ''
+		},
+		{
+            title: 'Chest and Triceps',
+            date: '2020-06-30',
+            //startRecur: currentEvent.repeat.length ? '2020-06-23' : '',
+            //endRecur: '',
+            //daysOfWeek: currentEvent.repeat.length ? currentEvent.repeat : ''
+		},
+		{
+            title: 'Chest and Triceps',
+            date: '2020-07-01',
+            //startRecur: currentEvent.repeat.length ? '2020-06-23' : '',
+            //endRecur: '',
+            //daysOfWeek: currentEvent.repeat.length ? currentEvent.repeat : ''
+        },
+    ]
+	
+	const [selectedDate, setSelectedDate] = useState(moment().format('YYYY-MM-DD'));
 	const [workout, setWorkout] = useState(false);
+	const [markedDates, setMarkedDates] = useState(myEventsList.map(a => a.date));
 
-	const onDateSelected = (date) => {
-		//console.log(date.format('YYYY-MM-DD'));
-		console.log(date);
-		setSelDate(date);
+
+
+	handleOnPressDate = (date) => {
+		setSelectedDate(date);
+		//console.log(selectedDate);
+		/*var events = [];
+		eventDate.forEach((event, index) => {
+
+			if (event == moment(selectedDate).format('YYYY-MM-DD'))
+			{
+				events.push(index);
+			}
+		})
+		setEventIDs(events);*/
 	}
 
-	const onWeekChanged = (min, max) => {
-		
-		setSelDate(min);
-		
+	function addEvent() {
+		var event = markedDates;
+		event.push(dayToAdd);
+		dayToAdd = moment(dayToAdd).add(1, 'day').format('YYYY-MM-DD'); // Testing function
+		setMarkedDates(event);
+		CalRef.current.forceUpdate();
 	}
 
-	useEffect(() => {
-		console.log('use effect -');
-		console.log(headerRef.current.getSelectedDate());
-		console.log('use effect -');
-	})
+	function getDay() {
 
-	const onHeaderSelected = (dateRange) => { // TODO: fix having to click twice
-		console.log('header clicked');
-		console.log(dateRange);
-		//dateRange.weekStartDate=moment.startOf('week');
-		//headerRef.current.updateWeekView(moment().startOf('week'));
-
-		headerRef.current.setSelectedDate(moment().startOf('day'));
-		headerRef.current.updateWeekView(moment().startOf('week'));
 	}
 
 	return (
 		<View style={styles.container}>
-			<CalendarStrip 
-				ref={headerRef}
-				style={{ height: 100, paddingTop: 20, paddingBottom: 5 }}
-				calendarColor={'#416165'}
-				useIsoWeekday={false}
-				startingDate={selDateStarting}
-				selectedDate={selDate}
-				onHeaderSelected={onHeaderSelected}
-				daySelectionAnimation={{ type: 'border', duration: 0, borderWidth: 1, borderHighlightColor: 'black' }}
-				
-				onDateSelected={onDateSelected}
-				onWeekChanged={onWeekChanged}
-				
+			<CalendarStrip isEnglish showWeekNumber showEnglishLunar
+				selectedDate={selectedDate} 
+				onPressDate={handleOnPressDate}
+				onPressGoToday={(today) => setSelectedDate(today) }
+
+				markedDate={markedDates}
+				weekStartsOn={0}
+
+				ref = {CalRef} // remove if can fix cal not updating when event changes
 			/>
 			<View style={styles.day} >
 			<View style={{width: '15%', alignItems: 'center',
@@ -111,8 +134,11 @@ export function DashboardCalendar() {
 						onPress={() => console.log('delete')}
 					/>
 				</View>
+				
 			</View>
-
+			<Button icon="alert-octagon" mode="contained" onPress={addEvent}>
+					Test
+				</Button>
 		</View>
 	)
 }
@@ -135,7 +161,9 @@ export function PageCalendar() {
 
 
 const styles = StyleSheet.create({
-	container: { flex: 1 },
+	container: { 
+		width: '100%',
+		flex: 1 },
 	component: {
 		width: Dimensions.get('window').width,
 		alignItems: 'center',
