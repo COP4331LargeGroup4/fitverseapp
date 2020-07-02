@@ -1,4 +1,4 @@
-import React, { Component, useState, useRef } from 'react';
+import React, { Component, useState, useRef, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Checkbox, IconButton } from 'react-native-paper';
 import CalendarStrip from 'react-native-calendar-strip';
@@ -13,20 +13,35 @@ import moment from 'moment';
 export function DashboardCalendar() {
 	const headerRef = useRef(null);
 	const [selDate, setSelDate] = useState(moment());
+	const [selDateStarting, setSelDateStarting] = useState(moment().startOf('week'));
 	const [workout, setWorkout] = useState(false);
 
 	const onDateSelected = (date) => {
 		//console.log(date.format('YYYY-MM-DD'));
+		console.log(date);
 		setSelDate(date);
 	}
 
+	const onWeekChanged = (min, max) => {
+		
+		setSelDate(min);
+		
+	}
+
+	useEffect(() => {
+		console.log('use effect -');
+		console.log(headerRef.current.getSelectedDate());
+		console.log('use effect -');
+	})
+
 	const onHeaderSelected = (dateRange) => { // TODO: fix having to click twice
 		console.log('header clicked');
-		setSelDate(moment());
-		headerRef.current.setSelectedDate(0);
+		console.log(dateRange);
+		//dateRange.weekStartDate=moment.startOf('week');
+		//headerRef.current.updateWeekView(moment().startOf('week'));
+
+		headerRef.current.setSelectedDate(moment().startOf('day'));
 		headerRef.current.updateWeekView(moment().startOf('week'));
-		headerRef.current.setSelectedDate(moment());
-		
 	}
 
 	return (
@@ -36,12 +51,13 @@ export function DashboardCalendar() {
 				style={{ height: 100, paddingTop: 20, paddingBottom: 5 }}
 				calendarColor={'#416165'}
 				useIsoWeekday={false}
-				startingDate={moment().startOf('week')}
+				startingDate={selDateStarting}
 				selectedDate={selDate}
 				onHeaderSelected={onHeaderSelected}
 				daySelectionAnimation={{ type: 'border', duration: 0, borderWidth: 1, borderHighlightColor: 'black' }}
 				
 				onDateSelected={onDateSelected}
+				onWeekChanged={onWeekChanged}
 				
 			/>
 			<View style={styles.day} >
