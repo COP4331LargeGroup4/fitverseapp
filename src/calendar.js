@@ -1,5 +1,6 @@
-import React, { Component } from 'react'
+import React, { Component, useState, useRef } from 'react';
 import { View, StyleSheet } from 'react-native';
+import { Checkbox, IconButton } from 'react-native-paper';
 import CalendarStrip from 'react-native-calendar-strip';
 
 import { Dimensions, Text } from 'react-native';
@@ -10,36 +11,96 @@ import moment from 'moment';
 
 
 export function DashboardCalendar() {
-	
-	onDateSelected = date => {
-		console.log(date.format('YYYY-MM-DD'));
+	const headerRef = useRef(null);
+	const [selDate, setSelDate] = useState(moment());
+	const [workout, setWorkout] = useState(false);
+
+	const onDateSelected = (date) => {
+		//console.log(date.format('YYYY-MM-DD'));
+		setSelDate(date);
+	}
+
+	const onHeaderSelected = (dateRange) => { // TODO: fix having to click twice
+		console.log('header clicked');
+		setSelDate(moment());
+		headerRef.current.setSelectedDate(0);
+		headerRef.current.updateWeekView(moment().startOf('week'));
+		headerRef.current.setSelectedDate(moment());
+		
 	}
 
 	return (
 		<View style={styles.container}>
 			<CalendarStrip 
+				ref={headerRef}
 				style={{ height: 100, paddingTop: 20, paddingBottom: 5 }}
 				calendarColor={'#416165'}
+				useIsoWeekday={false}
+				startingDate={moment().startOf('week')}
+				selectedDate={selDate}
+				onHeaderSelected={onHeaderSelected}
 				daySelectionAnimation={{ type: 'border', duration: 0, borderWidth: 1, borderHighlightColor: 'black' }}
-				onDateSelected={this.onDateSelected}
+				
+				onDateSelected={onDateSelected}
 				
 			/>
 			<View style={styles.day} >
-				<View style={styles.dayLabel}>
-					<Text style={[styles.monthDateText]}>6/9</Text>
-					<Text style={[styles.dayText]}>nice</Text>
+			<View style={{width: '15%', alignItems: 'center',
+						padding: 10,
+						borderRightColor: 'grey',
+						borderRightWidth: StyleSheet.hairlineWidth,}}>
+					<Checkbox
+						status={workout ? 'checked' : 'unchecked'}
+						onPress={() => {
+							setWorkout(!workout);
+						}}
+					/>
 				</View>
-				<View style={[styles.allEvents, true ? { width: '100%', backgroundColor: 'lightgrey' } : {}]}>
-					<Text>test</Text>
+				<View style={[styles.allEvents, true ? { width: '65%', backgroundColor: 'lightgrey' } : {}]}>
+					<Text>Test</Text>
+				</View>
+				<View style={{width: '20%', flex:1,flexDirection: 'row',alignItems: 'center',justifyContent:'space-evenly', backgroundColor: 'lightgrey'}}>
+					<IconButton
+						icon='settings'
+						onPress={() => console.log('settings')}
+					/>
+					<IconButton
+						icon='delete'
+						onPress={() => console.log('delete')}
+					/>
+				</View>
+			</View>
+			<View style={styles.day} >
+				<View style={{width: '15%', alignItems: 'center',
+						padding: 10,
+						borderRightColor: 'grey',
+						borderRightWidth: StyleSheet.hairlineWidth,}}>
+					<Checkbox
+						status={workout ? 'checked' : 'unchecked'}
+						onPress={() => {
+							setWorkout(!workout);
+						}}
+					/>
+				</View>
+				<View style={[styles.allEvents, true ? { width: '65%', backgroundColor: 'lightgrey' } : {}]}>
+					<Text>Test</Text>
+				</View>
+				<View style={{width: '20%', flex:1,flexDirection: 'row',alignItems: 'center',justifyContent:'space-evenly', backgroundColor: 'lightgrey'}}>
+					<IconButton
+						icon='settings'
+						onPress={() => console.log('settings')}
+					/>
+					<IconButton
+						icon='delete'
+						onPress={() => console.log('delete')}
+					/>
 				</View>
 			</View>
 
 		</View>
 	)
 }
-//onLayout= {event => { offsets[i] = event.nativeEvent.layout.y }}
 
-//{j < events.length - 1 && <View style={styles.lineSeparator} />}
 
 export function PageCalendar() {
 	return (
