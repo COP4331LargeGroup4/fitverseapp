@@ -1,7 +1,7 @@
 import React, { Component, useState, useEffect, useRef } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Checkbox, IconButton, Button } from 'react-native-paper';
-import CalendarStrip from 'react-native-slideable-calendar-strip';
+import { View, StyleSheet, Alert } from 'react-native';
+import { Checkbox, IconButton, Button, List } from 'react-native-paper';
+import CalendarStrip from 'react-native-calendar-strip';
 
 import { Dimensions, Text } from 'react-native';
 import moment from 'moment';
@@ -16,29 +16,29 @@ export function DashboardCalendar() {
 	var dayToAdd = moment().format('YYYY-MM-DD')
 
 	var myEventsList = [
-        {
-            title: 'Chest and Triceps',
-            date: '2020-06-29',
-            //startRecur: currentEvent.repeat.length ? '2020-06-23' : '',
-            //endRecur: '',
-            //daysOfWeek: currentEvent.repeat.length ? currentEvent.repeat : ''
+		{
+			title: 'Chest and Triceps',
+			date: '2020-06-29',
+			//startRecur: currentEvent.repeat.length ? '2020-06-23' : '',
+			//endRecur: '',
+			//daysOfWeek: currentEvent.repeat.length ? currentEvent.repeat : ''
 		},
 		{
-            title: 'Chest and Triceps',
-            date: '2020-06-30',
-            //startRecur: currentEvent.repeat.length ? '2020-06-23' : '',
-            //endRecur: '',
-            //daysOfWeek: currentEvent.repeat.length ? currentEvent.repeat : ''
+			title: 'Chest and Triceps',
+			date: '2020-06-30',
+			//startRecur: currentEvent.repeat.length ? '2020-06-23' : '',
+			//endRecur: '',
+			//daysOfWeek: currentEvent.repeat.length ? currentEvent.repeat : ''
 		},
 		{
-            title: 'Chest and Triceps',
-            date: '2020-07-01',
-            //startRecur: currentEvent.repeat.length ? '2020-06-23' : '',
-            //endRecur: '',
-            //daysOfWeek: currentEvent.repeat.length ? currentEvent.repeat : ''
-        },
-    ]
-	
+			title: 'Chest and Triceps',
+			date: '2020-07-01',
+			//startRecur: currentEvent.repeat.length ? '2020-06-23' : '',
+			//endRecur: '',
+			//daysOfWeek: currentEvent.repeat.length ? currentEvent.repeat : ''
+		},
+	]
+
 	const [selectedDate, setSelectedDate] = useState(moment().format('YYYY-MM-DD'));
 	const [workout, setWorkout] = useState(false);
 	const [markedDates, setMarkedDates] = useState(myEventsList.map(a => a.date));
@@ -67,77 +67,120 @@ export function DashboardCalendar() {
 		CalRef.current.forceUpdate();
 	}
 
-	function getDay() {
-
+	markedDatesFunc = date => {
+		if (date.isoWeekday() === 4) { // Thursdays
+			return {
+				dots: [{
+					color: "#000000",
+					selectedColor: "#333333",
+				}]
+			};
+		}
+		// Line
+		if (date.isoWeekday() === 6) { // Saturdays
+			return {
+				lines: [{
+					color: "#000000",
+					selectedColor: "#333333",
+				}]
+			};
+		}
+		return {};
 	}
+
 
 	return (
 		<View style={styles.container}>
-			<CalendarStrip isEnglish showWeekNumber showEnglishLunar
-				selectedDate={selectedDate} 
-				onPressDate={handleOnPressDate}
-				onPressGoToday={(today) => setSelectedDate(today) }
+			<CalendarStrip
+				ref={CalRef}
 
-				markedDate={markedDates}
-				weekStartsOn={0}
-
-				ref = {CalRef} // remove if can fix cal not updating when event changes
-			/>
-			<View style={styles.day} >
-			<View style={{width: '15%', alignItems: 'center',
-						padding: 10,
-						borderRightColor: 'grey',
-						borderRightWidth: StyleSheet.hairlineWidth,}}>
-					<Checkbox
-						status={workout ? 'checked' : 'unchecked'}
-						onPress={() => {
-							setWorkout(!workout);
-						}}
-					/>
-				</View>
-				<View style={[styles.allEvents, true ? { width: '65%', backgroundColor: 'lightgrey' } : {}]}>
-					<Text>Test</Text>
-				</View>
-				<View style={{width: '20%', flex:1,flexDirection: 'row',alignItems: 'center',justifyContent:'space-evenly', backgroundColor: 'lightgrey'}}>
-					<IconButton
-						icon='settings'
-						onPress={() => console.log('settings')}
-					/>
-					<IconButton
-						icon='delete'
-						onPress={() => console.log('delete')}
-					/>
-				</View>
-			</View>
-			<View style={styles.day} >
-				<View style={{width: '15%', alignItems: 'center',
-						padding: 10,
-						borderRightColor: 'grey',
-						borderRightWidth: StyleSheet.hairlineWidth,}}>
-					<Checkbox
-						status={workout ? 'checked' : 'unchecked'}
-						onPress={() => {
-							setWorkout(!workout);
-						}}
-					/>
-				</View>
-				<View style={[styles.allEvents, true ? { width: '65%', backgroundColor: 'lightgrey' } : {}]}>
-					<Text>Test</Text>
-				</View>
-				<View style={{width: '20%', flex:1,flexDirection: 'row',alignItems: 'center',justifyContent:'space-evenly', backgroundColor: 'lightgrey'}}>
-					<IconButton
-						icon='settings'
-						onPress={() => console.log('settings')}
-					/>
-					<IconButton
-						icon='delete'
-						onPress={() => console.log('delete')}
-					/>
-				</View>
+				style={{ height: 150, paddingTop: 20, paddingBottom: 10 }}
+				numDaysInWeek={7}
+				startingDate={moment().startOf('week')}
+				useIsoWeekday={false}
+				daySelectionAnimation={{ type: 'border', duration: 0, borderWidth: 1, borderHighlightColor: 'black' }}
 				
+				markedDates={markedDatesFunc}
+				selectedDate={selectedDate}
+			/>
+			<List.Accordion 
+				title="test"
+			>
+				<View style={styles.day} >
+					<View style={{
+						width: '15%', alignItems: 'center',
+						padding: 10,
+						borderRightColor: 'grey',
+						borderRightWidth: StyleSheet.hairlineWidth,
+					}}>
+						<Checkbox
+							status={workout ? 'checked' : 'unchecked'}
+							onPress={() => {
+								setWorkout(!workout);
+							}}
+						/>
+					</View>
+					<View style={[styles.allEvents, true ? { width: '65%', backgroundColor: 'lightgrey' } : {}]}>
+						<Text>Test</Text>
+					</View>
+					<View style={{ width: '20%', flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', backgroundColor: 'lightgrey' }}>
+						<IconButton
+							icon='settings'
+							onPress={() => console.log('settings')}
+						/>
+						<IconButton
+							icon='delete'
+							onPress={() => console.log('delete')}
+						/>
+					</View>
+				</View>
+
+			</List.Accordion>
+			<List.Accordion title="test">
+			<View style={styles.day} >
+				<View style={{
+					width: '15%', alignItems: 'center',
+					padding: 10,
+					borderRightColor: 'grey',
+					borderRightWidth: StyleSheet.hairlineWidth,
+				}}>
+					<Checkbox
+						status={workout ? 'checked' : 'unchecked'}
+						onPress={() => {
+							setWorkout(!workout);
+						}}
+					/>
+				</View>
+				<View style={[styles.allEvents, true ? { width: '65%', backgroundColor: 'lightgrey' } : {}]}>
+					<Text>Test</Text>
+				</View>
+				<View style={{ width: '20%', flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', backgroundColor: 'lightgrey' }}>
+					<IconButton
+						icon='settings'
+						onPress={() => console.log('settings')}
+					/>
+					<IconButton
+						icon='delete'
+						onPress={() => (Alert.alert(
+							"Are you sure you want to delete this exersise?",
+							"Deleting this exersise will only remove this one day",
+							[
+							  {
+								text: "Cancel",
+								onPress: () => console.log("Cancel Pressed"),
+								style: "cancel"
+							  },
+							  { text: "OK", onPress: () => console.log("OK Pressed") }
+							],
+							{ cancelable: false }
+						  ))}
+					/>
+				</View>
+
 			</View>
+			</List.Accordion>
 			<Button icon="alert-octagon" mode="contained" onPress={addEvent}>
-					Test
+				Test
 				</Button>
 		</View>
 	)
@@ -161,9 +204,10 @@ export function PageCalendar() {
 
 
 const styles = StyleSheet.create({
-	container: { 
+	container: {
 		width: '100%',
-		flex: 1 },
+		flex: 1
+	},
 	component: {
 		width: Dimensions.get('window').width,
 		alignItems: 'center',
