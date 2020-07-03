@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { StyleSheet, Text, SafeAreaView, View, Image, Dimensions } from 'react-native';
-import { BottomNavigation, Button, TextInput } from 'react-native-paper';
+import { BottomNavigation, Button, TextInput, HelperText } from 'react-native-paper';
 
 
 //import * as mdiIcon from '@mdi/react' // can i change the iconprovder to this? or add mdiAccountCowboyHat to react-native-icon-provider or whatever its called
@@ -177,44 +177,87 @@ const SignUpForm = () => {
 	return (
 		<Formik
 			initialValues={{ firstname:'', lastname:'', email: '', password:'' }}
+			validationSchema={Yup.object({
+				firstname: Yup.string("Enter your firstname")
+					.required("First Name is Required"),
+				lastname: Yup.string("Enter your lastname")
+					.required("Last Name is Required"),
+				email: Yup.string("Enter your email")
+					.email("Enter valid email")
+					.required("Email is required"),
+				password: Yup.string("Enter your password")
+					.min(8, "Password must contain at least 8 character")
+					.required("Password is required"),
+			})}
 			onSubmit={values => console.log(values)}
 		>
-		{({ handleChange, handleBlur, handleSubmit, values }) => (
+		{({ handleChange, handleBlur, handleSubmit, touched, errors, values }) => (
 		<View>
 			<View style={{ flexDirection: 'row' }}>
-				<TextInput
-					label="First Name"
-					onChangeText={handleChange('firstname')}
-					onBlur={handleBlur('firstname')}
-					value={values.firstname}
-					mode='outlined'
-					style={{ width: '50%', justifyContent: 'center' }}
-				/>
-				<TextInput
-					label="Last Name"
-					onChangeText={handleChange('lastname')}
-					onBlur={handleBlur('lastname')}
-					value={values.lastname}
-					mode='outlined'
-					style={{ width: '50%', justifyContent: 'center' }}
-				/>
+				<View style={{width: '50%'}}>
+					<TextInput
+						label="First Name"
+						onChangeText={handleChange('firstname')}
+						onBlur={handleBlur('firstname')}
+						value={values.firstname}
+						mode='outlined'
+						required
+						style={{ justifyContent: 'center' }}
+						error={touched.firstname && errors.firstname}
+					/>
+					<HelperText type='error' visible={touched.firstname && errors.firstname}>
+						{touched.firstname && errors.firstname}
+					</HelperText>
+				</View>
+				<View style={{width: '50%'}}>
+					<TextInput
+						label="Last Name"
+						onChangeText={handleChange('lastname')}
+						onBlur={handleBlur('lastname')}
+						value={values.lastname}
+						mode='outlined'
+						style={{ justifyContent: 'center' }}
+						error={touched.lastname && errors.lastname}
+					/>
+					<HelperText type='error' visible={touched.lastname && errors.lastname}>
+						{touched.lastname && errors.lastname}
+					</HelperText>
+				</View>
 			</View>
-			<TextInput
-				label="Email Address"
-				onChangeText={handleChange('email')}
-				onBlur={handleBlur('email')}
-				value={values.email}
-				mode='outlined'
-			/>
-			<TextInput
-				label="Password"
-				onChangeText={handleChange('password')}
-				onBlur={handleBlur('password')}
-				value={values.password}
-				mode='outlined'
-				secureTextEntry={true}
-			/>
-			<Button onPress={handleSubmit} mode='contained'>Submit</Button>
+			<View>
+				<TextInput
+					label="Email Address"
+					onChangeText={handleChange('email')}
+					onBlur={handleBlur('email')}
+					value={values.email}
+					mode='outlined'
+					error={touched.email && errors.email}
+				/>
+				<HelperText type='error' visible={touched.email && errors.email}>
+					{touched.email && errors.email}
+				</HelperText>
+			</View>
+			<View>
+				<TextInput
+					label="Password"
+					onChangeText={handleChange('password')}
+					onBlur={handleBlur('password')}
+					value={values.password}
+					mode='outlined'
+					secureTextEntry={true}
+					error={touched.password && errors.password}
+				/>
+				<HelperText type='error' visible={touched.password && errors.password}>
+					{touched.password && errors.password}
+				</HelperText>
+			</View>
+			<Button
+				onPress={handleSubmit}
+				mode='contained'
+				disabled={!errors}
+			>
+				Submit
+			</Button>
 		</View>
 		)}
 		</Formik>
@@ -233,49 +276,3 @@ const App = () => {
 }
 
 export default App;
-
-
-/*<Formik
-						initialValues={{ firstname: '', lastname: '', email: '', password: '' }}
-						onSubmit={values => console.log(values)}
-					/>
-					{({ handleChange, handleBlur, handleSubmit, values }) => (
-						<View>
-							<View style={{ flexDirection: 'row' }}>
-								<TextInput
-									label="First Name"
-									value={values.firstname}
-									onChangeText={handleChange('firstname')}
-									onBlur={handleBlur('firstname')}
-									mode='outlined'
-									style={{ width: '50%', justifyContent: 'center' }}
-								/>
-								<TextInput
-									label="Last Name"
-									value={lastname}
-									onChangeText={lastname => setLastname(lastname)}
-									mode='outlined' // could implement staying logged in after this
-									style={{ width: '50%' }}
-								/>
-							</View>
-							<TextInput
-								label="Email Address"
-								value={email}
-								onChangeText={ValidateEmail}
-								mode='outlined'
-							/>
-							<TextInput
-								label="Password"
-								value={password}
-								onChangeText={password => setPassword(password)}
-								secureTextEntry={true}
-								mode='outlined' // could implement staying logged in after this
-							/>
-							<Button
-								mode='contained'
-							>
-								Sign in
-							</Button>
-						</View>
-					)}
-					</Formik>*/
