@@ -9,38 +9,40 @@ import SafeViewAndroid from "./components/SafeAndroidView";
 import Profile from './src/profile';
 import Logo from './assets/logo.svg'
 import { DashboardCalendar, PageCalendar } from './src/calendar';
+import { Formik } from 'formik';
+import * as Yup from 'yup';
 
 
-const width = Dimensions.get('window').width; 
+const width = Dimensions.get('window').width;
 
 
 //<Image source={require('./assets/logo.png')} style={{ alignContent:'center', resizeMode:'center', width: (width * .8) }} />
 
-const DashboardRoute = () => 
+const DashboardRoute = () =>
 	<View >
-		<Logo 
+		<Logo
 			width='100%'
 			height='20%'
-			
+
 			style={styles.container}
 		/>
 		<DashboardCalendar />
 
 	</View >;
 
-const CalendarRoute = () => 
+const CalendarRoute = () =>
 	<View >
 		<PageCalendar />
 	</View >;
 
-const RecentsRoute = () => 
+const RecentsRoute = () =>
 	<View >
 		<Text>Recents</Text>
 		<Text>Route</Text>
 		<Text>test</Text>
 	</View >;
 
-const ProfileRoute = () => 
+const ProfileRoute = () =>
 	<View >
 		<Profile />
 	</View >;
@@ -98,97 +100,125 @@ const WelcomePage = () => {
 
 	return (
 		<>
-		<Logo 
-			width='100%'
-			height='10%'
-			style={styles.container}
-		/>
-		<View style={{flexDirection:'row', justifyContent:'space-evenly', marginTop:10}}>
-			<Button 
-				style={{width:'40%'}}
-				mode={pageState == 'signin' ? "contained" : "outlined"}
-				onPress={() => setPageState('signin')}
-			>
-				Log in
-			</Button>
-			<Button 
-				style={{width:'40%'}}
-				mode={pageState != 'signin' ? "contained" : "outlined"}
-				onPress={() => setPageState('signup')}
-			>
-				Sign up
-			</Button>
-		</View>
-		{pageState == 'signin' ?
-			<View>
-				<Text style={{textAlign:'center'}}>Log in to your fitverse account</Text>
-				<TextInput
-					label="Email Address"
-					value={email}
-					onChangeText={ValidateEmail}
-					mode='outlined'
-				/>
-				<TextInput
-					label="Password"
-					value={password}
-					onChangeText={password => setPassword(password)}
-					secureTextEntry={true}
-					mode='outlined' // could implement staying logged in after this
-				/>
+			<Logo
+				width='100%'
+				height='10%'
+				style={styles.container}
+			/>
+			<View style={{ flexDirection: 'row', justifyContent: 'space-evenly', marginTop: 10 }}>
 				<Button
-					mode='contained'
+					style={{ width: '40%' }}
+					mode={pageState == 'signin' ? "contained" : "outlined"}
+					onPress={() => setPageState('signin')}
 				>
-					Sign in
-				</Button>
+					Log in
+			</Button>
+				<Button
+					style={{ width: '40%' }}
+					mode={pageState != 'signin' ? "contained" : "outlined"}
+					onPress={() => setPageState('signup')}
+				>
+					Sign up
+			</Button>
+			</View>
+			{pageState == 'signin' ?
 				<View>
-					<Text>Forgot password?</Text>
+					<Text style={{ textAlign: 'center' }}>Log in to your fitverse account</Text>
+						<SignInForm />
+					<View>
+						<Text>Forgot password?</Text>
+					</View>
 				</View>
-			</View>
-		:
+				:
+				<View>
+					<Text style={{ textAlign: 'center' }}>Sign up for a fitverse account</Text>
+						<SignUpForm />
+					<View>
+						<Text>Forgot password?</Text>
+					</View>
+				</View>
+		
+			}
+		</>
+	);
+}
+
+const SignInForm = () => {
+	return (
+		<Formik
+			initialValues={{ email: '', password:'' }}
+			onSubmit={values => console.log(values)}
+		>
+		{({ handleChange, handleBlur, handleSubmit, values }) => (
 		<View>
-			<Text style={{textAlign:'center'}}>Sign up for a fitverse account</Text>
-			<View style={{flexDirection:'row'}}>
-				<TextInput
-					label="Email Address"
-					value={email}
-					onChangeText={ValidateEmail}
-					mode='outlined'
-					style={{width:'50%', justifyContent:'center'}}
-				/>
-				<TextInput
-					label="Password"
-					value={password}
-					onChangeText={password => setPassword(password)}
-					secureTextEntry={true}
-					mode='outlined' // could implement staying logged in after this
-					style={{width:'50%'}}
-				/>
-			</View>
 			<TextInput
 				label="Email Address"
-				value={email}
-				onChangeText={ValidateEmail}
+				onChangeText={handleChange('email')}
+				onBlur={handleBlur('email')}
+				value={values.email}
 				mode='outlined'
 			/>
 			<TextInput
 				label="Password"
-				value={password}
-				onChangeText={password => setPassword(password)}
+				onChangeText={handleChange('password')}
+				onBlur={handleBlur('password')}
+				value={values.password}
+				mode='outlined'
 				secureTextEntry={true}
-				mode='outlined' // could implement staying logged in after this
 			/>
-			<Button
-				mode='contained'
-			>
-				Sign in
-			</Button>
-			<View>
-				<Text>Forgot password?</Text>
-			</View>
+			<Button onPress={handleSubmit} mode='contained'>Submit</Button>
 		</View>
-		}
-		</>
-	);
+		)}
+		</Formik>
+	)
+}
+
+const SignUpForm = () => {
+	return (
+		<Formik
+			initialValues={{ firstname:'', lastname:'', email: '', password:'' }}
+			onSubmit={values => console.log(values)}
+		>
+		{({ handleChange, handleBlur, handleSubmit, values }) => (
+		<View>
+			<View style={{ flexDirection: 'row' }}>
+				<TextInput
+					label="First Name"
+					onChangeText={handleChange('firstname')}
+					onBlur={handleBlur('firstname')}
+					value={values.firstname}
+					mode='outlined'
+					style={{ width: '50%', justifyContent: 'center' }}
+				/>
+				<TextInput
+					label="Last Name"
+					onChangeText={handleChange('lastname')}
+					onBlur={handleBlur('lastname')}
+					value={values.lastname}
+					mode='outlined'
+					style={{ width: '50%', justifyContent: 'center' }}
+				/>
+			</View>
+			<TextInput
+				label="Email Address"
+				onChangeText={handleChange('email')}
+				onBlur={handleBlur('email')}
+				value={values.email}
+				mode='outlined'
+			/>
+			<TextInput
+				label="Password"
+				onChangeText={handleChange('password')}
+				onBlur={handleBlur('password')}
+				value={values.password}
+				mode='outlined'
+				secureTextEntry={true}
+			/>
+			<Button onPress={handleSubmit} mode='contained'>Submit</Button>
+		</View>
+		)}
+		</Formik>
+	)
 }
 
 const App = () => {
@@ -203,3 +233,49 @@ const App = () => {
 }
 
 export default App;
+
+
+/*<Formik
+						initialValues={{ firstname: '', lastname: '', email: '', password: '' }}
+						onSubmit={values => console.log(values)}
+					/>
+					{({ handleChange, handleBlur, handleSubmit, values }) => (
+						<View>
+							<View style={{ flexDirection: 'row' }}>
+								<TextInput
+									label="First Name"
+									value={values.firstname}
+									onChangeText={handleChange('firstname')}
+									onBlur={handleBlur('firstname')}
+									mode='outlined'
+									style={{ width: '50%', justifyContent: 'center' }}
+								/>
+								<TextInput
+									label="Last Name"
+									value={lastname}
+									onChangeText={lastname => setLastname(lastname)}
+									mode='outlined' // could implement staying logged in after this
+									style={{ width: '50%' }}
+								/>
+							</View>
+							<TextInput
+								label="Email Address"
+								value={email}
+								onChangeText={ValidateEmail}
+								mode='outlined'
+							/>
+							<TextInput
+								label="Password"
+								value={password}
+								onChangeText={password => setPassword(password)}
+								secureTextEntry={true}
+								mode='outlined' // could implement staying logged in after this
+							/>
+							<Button
+								mode='contained'
+							>
+								Sign in
+							</Button>
+						</View>
+					)}
+					</Formik>*/
