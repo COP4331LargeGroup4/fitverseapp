@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { StyleSheet, Text, SafeAreaView, View, Image, Dimensions } from 'react-native';
-import { BottomNavigation, Button, TextInput, HelperText } from 'react-native-paper';
+import { BottomNavigation, Button, TextInput, HelperText, ActivityIndicator } from 'react-native-paper';
 
 
 //import * as mdiIcon from '@mdi/react' // can i change the iconprovder to this? or add mdiAccountCowboyHat to react-native-icon-provider or whatever its called
@@ -18,6 +18,34 @@ import AsyncStorage from '@react-native-community/async-storage';
 const width = Dimensions.get('window').width;
 
 const baseAPIURL = 'https://fitverse.herokuapp.com';
+
+
+
+const getData = async (token) => {
+	try {
+		return await AsyncStorage.getItem(token);
+	} catch (e) {
+		console.log(e);
+	}
+}
+
+const setData = async (key, value) => {
+	try {
+		await AsyncStorage.setItem(key, value);
+	} catch (e) {
+		console.log(e);
+	}
+}
+
+const clearData = async () => {
+	try {
+		await AsyncStorage.clear();
+	} catch (e) {
+		console.log(e);
+	}
+	console.log('Storage Cleared');
+}
+
 
 //<Image source={require('./assets/logo.png')} style={{ alignContent:'center', resizeMode:'center', width: (width * .8) }} />
 
@@ -141,6 +169,10 @@ const WelcomePage = () => {
 			}
 		</>
 	);
+}
+
+const getJWT = () => {
+	const [jwt, setJWT] = useState
 }
 
 const SignInForm = () => {
@@ -281,51 +313,47 @@ const SignUpForm = () => {
 	)
 }
 
+const SilentLogin = (email, password) => {
+	axios.post(baseAPIURL + '/api/user/login', { email: email, password: password })
+		.then((data) => {return data})
+		.catch((data) => console.log(data));
+}
 
 const App = () => {
-	const getData = async () => {
-		try {
-			const value = await AsyncStorage.getItem('jwt')
-			if (value !== null) {
-				console.log(value);
+
+	const [jwt, setJWT] = useState(null);
+
+	
+	//setData('usercreds', usercreds);
+	clearData();
+
+	const getUsercreds = async() => {
+		let creds = await getData('usercreds');
+
+		return (creds === null ? null : JSON.parse(creds))
+	}
+
+	useEffect(() => {
+		getUsercreds().then((data) => {
+			if (data === null)
+			{
+				setJWT(-1);
 			}
 			else {
-				console.log(null);
+
+				let token = SilentLogin(data.email, data.password);
+				console.log(token);
+
+				setJWT(token);
 			}
-		} catch (e) {
-			console.log(e);
-		}
-	}
-
-	const storeData = async (value) => {
-		try {
-			await AsyncStorage.setItem('jwt', 'test');
-		} catch (e) {
-			console.log(e);
-		}
-	}
-
-	const clearAll = async () => {
-		try {
-			await AsyncStorage.clear()
-		} catch (e) {
-			// clear error
-		}
-
-		console.log('Done.')
-	}
-
-
-	const [userID, setUserID] = useState(-1);
-
-	clearAll();
-	getData();
-	storeData();
-	getData();
+		});
+	}, [] );
 
 	return (
 		<SafeAreaView style={SafeViewAndroid.AndroidSafeArea}>
-			{userID <= -1 ? <WelcomePage /> : <Dashboard />}
+			{jwt === null ? <ActivityIndicator animating={true} size='large' style={{height:'100%',display:"flex",justifyContent:"center",alignItems: "center"}} /> 
+				: (jwt <= -1 ? <WelcomePage /> : <Dashboard />)}
+			
 		</SafeAreaView>
 	)
 }
