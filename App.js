@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { StyleSheet, Text, SafeAreaView, View, Image, Dimensions } from 'react-native';
 import { BottomNavigation, Button, TextInput, HelperText } from 'react-native-paper';
 
@@ -11,10 +11,13 @@ import Logo from './assets/logo.svg'
 import { DashboardCalendar, PageCalendar } from './src/calendar';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
+import axios from 'axios';
+import AsyncStorage from '@react-native-community/async-storage';
 
 
 const width = Dimensions.get('window').width;
 
+const baseAPIURL = 'https://fitverse.herokuapp.com';
 
 //<Image source={require('./assets/logo.png')} style={{ alignContent:'center', resizeMode:'center', width: (width * .8) }} />
 
@@ -124,7 +127,7 @@ const WelcomePage = () => {
 			{pageState == 'signin' ?
 				<View>
 					<Text style={{ textAlign: 'center' }}>Log in to your fitverse account</Text>
-						<SignInForm />
+					<SignInForm />
 					<View>
 						<Text>Forgot password?</Text>
 					</View>
@@ -132,12 +135,9 @@ const WelcomePage = () => {
 				:
 				<View>
 					<Text style={{ textAlign: 'center' }}>Sign up for a fitverse account</Text>
-						<SignUpForm />
-					<View>
-						<Text>Forgot password?</Text>
-					</View>
+					<SignUpForm />
 				</View>
-		
+
 			}
 		</>
 	);
@@ -146,29 +146,46 @@ const WelcomePage = () => {
 const SignInForm = () => {
 	return (
 		<Formik
-			initialValues={{ email: '', password:'' }}
-			onSubmit={values => console.log(values)}
+			initialValues={{ email: '', password: '' }}
+			validationSchema={Yup.object({
+				email: Yup.string("Enter your email")
+					.email("Enter valid email")
+					.required("Email is required"),
+				password: Yup.string("Enter your password")
+					.min(8, "Password must contain at least 8 character")
+					.required("Password is required"),
+			})}
+			onSubmit={values => {
+				console.log(1);
+				axios.post(baseAPIURL + '/api/user/login', { email: values.email, password: values.password })
+					.then((data) => console.log(data.data))
+					.catch((data) => console.log(data));
+			}}
 		>
-		{({ handleChange, handleBlur, handleSubmit, values }) => (
-		<View>
-			<TextInput
-				label="Email Address"
-				onChangeText={handleChange('email')}
-				onBlur={handleBlur('email')}
-				value={values.email}
-				mode='outlined'
-			/>
-			<TextInput
-				label="Password"
-				onChangeText={handleChange('password')}
-				onBlur={handleBlur('password')}
-				value={values.password}
-				mode='outlined'
-				secureTextEntry={true}
-			/>
-			<Button onPress={handleSubmit} mode='contained'>Submit</Button>
-		</View>
-		)}
+			{({ handleChange, handleBlur, handleSubmit, touched, values, errors }) => (
+				<View>
+					<TextInput
+						label="Email Address"
+						onChangeText={handleChange('email')}
+						onBlur={handleBlur('email')}
+						value={values.email}
+						mode='outlined'
+						error={touched.email && errors.email}
+					/>
+					<HelperText type="error" visible={touched.email && errors.email}>{touched.email && errors.email}</HelperText>
+					<TextInput
+						label="Password"
+						onChangeText={handleChange('password')}
+						onBlur={handleBlur('password')}
+						value={values.password}
+						mode='outlined'
+						secureTextEntry={true}
+						error={touched.password && errors.password}
+					/>
+					<HelperText type="error" visible={touched.password && errors.password}>{touched.password && errors.password}</HelperText>
+					<Button onPress={handleSubmit} mode='contained'>Submit</Button>
+				</View>
+			)}
 		</Formik>
 	)
 }
@@ -176,7 +193,7 @@ const SignInForm = () => {
 const SignUpForm = () => {
 	return (
 		<Formik
-			initialValues={{ firstname:'', lastname:'', email: '', password:'' }}
+			initialValues={{ firstname: '', lastname: '', email: '', password: '' }}
 			validationSchema={Yup.object({
 				firstname: Yup.string("Enter your firstname")
 					.required("First Name is Required"),
@@ -191,82 +208,120 @@ const SignUpForm = () => {
 			})}
 			onSubmit={values => console.log(values)}
 		>
-		{({ handleChange, handleBlur, handleSubmit, touched, errors, values }) => (
-		<View>
-			<View style={{ flexDirection: 'row' }}>
-				<View style={{width: '50%'}}>
-					<TextInput
-						label="First Name"
-						onChangeText={handleChange('firstname')}
-						onBlur={handleBlur('firstname')}
-						value={values.firstname}
-						mode='outlined'
-						required
-						style={{ justifyContent: 'center' }}
-						error={touched.firstname && errors.firstname}
-					/>
-					<HelperText type='error' visible={touched.firstname && errors.firstname}>
-						{touched.firstname && errors.firstname}
-					</HelperText>
-				</View>
-				<View style={{width: '50%'}}>
-					<TextInput
-						label="Last Name"
-						onChangeText={handleChange('lastname')}
-						onBlur={handleBlur('lastname')}
-						value={values.lastname}
-						mode='outlined'
-						style={{ justifyContent: 'center' }}
-						error={touched.lastname && errors.lastname}
-					/>
-					<HelperText type='error' visible={touched.lastname && errors.lastname}>
-						{touched.lastname && errors.lastname}
-					</HelperText>
-				</View>
-			</View>
-			<View>
-				<TextInput
-					label="Email Address"
-					onChangeText={handleChange('email')}
-					onBlur={handleBlur('email')}
-					value={values.email}
-					mode='outlined'
-					error={touched.email && errors.email}
-				/>
-				<HelperText type='error' visible={touched.email && errors.email}>
-					{touched.email && errors.email}
-				</HelperText>
-			</View>
-			<View>
-				<TextInput
-					label="Password"
-					onChangeText={handleChange('password')}
-					onBlur={handleBlur('password')}
-					value={values.password}
-					mode='outlined'
-					secureTextEntry={true}
-					error={touched.password && errors.password}
-				/>
-				<HelperText type='error' visible={touched.password && errors.password}>
-					{touched.password && errors.password}
-				</HelperText>
-			</View>
-			<Button
-				onPress={handleSubmit}
-				mode='contained'
-				disabled={!errors}
-			>
-				Submit
+			{({ handleChange, handleBlur, handleSubmit, touched, errors, values }) => (
+				<View>
+					<View style={{ flexDirection: 'row' }}>
+						<View style={{ width: '50%' }}>
+							<TextInput
+								label="First Name"
+								onChangeText={handleChange('firstname')}
+								onBlur={handleBlur('firstname')}
+								value={values.firstname}
+								mode='outlined'
+								required
+								style={{ justifyContent: 'center' }}
+								error={touched.firstname && errors.firstname}
+							/>
+							<HelperText type='error' visible={touched.firstname && errors.firstname}>
+								{touched.firstname && errors.firstname}
+							</HelperText>
+						</View>
+						<View style={{ width: '50%' }}>
+							<TextInput
+								label="Last Name"
+								onChangeText={handleChange('lastname')}
+								onBlur={handleBlur('lastname')}
+								value={values.lastname}
+								mode='outlined'
+								style={{ justifyContent: 'center' }}
+								error={touched.lastname && errors.lastname}
+							/>
+							<HelperText type='error' visible={touched.lastname && errors.lastname}>
+								{touched.lastname && errors.lastname}
+							</HelperText>
+						</View>
+					</View>
+					<View>
+						<TextInput
+							label="Email Address"
+							onChangeText={handleChange('email')}
+							onBlur={handleBlur('email')}
+							value={values.email}
+							mode='outlined'
+							error={touched.email && errors.email}
+						/>
+						<HelperText type='error' visible={touched.email && errors.email}>
+							{touched.email && errors.email}
+						</HelperText>
+					</View>
+					<View>
+						<TextInput
+							label="Password"
+							onChangeText={handleChange('password')}
+							onBlur={handleBlur('password')}
+							value={values.password}
+							mode='outlined'
+							secureTextEntry={true}
+							error={touched.password && errors.password}
+						/>
+						<HelperText type='error' visible={touched.password && errors.password}>
+							{touched.password && errors.password}
+						</HelperText>
+					</View>
+					<Button
+						onPress={handleSubmit}
+						mode='contained'
+						disabled={!errors}
+					>
+						Submit
 			</Button>
-		</View>
-		)}
+				</View>
+			)}
 		</Formik>
 	)
 }
 
+
 const App = () => {
+	const getData = async () => {
+		try {
+			const value = await AsyncStorage.getItem('jwt')
+			if (value !== null) {
+				console.log(value);
+			}
+			else {
+				console.log(null);
+			}
+		} catch (e) {
+			console.log(e);
+		}
+	}
+
+	const storeData = async (value) => {
+		try {
+			await AsyncStorage.setItem('jwt', 'test');
+		} catch (e) {
+			console.log(e);
+		}
+	}
+
+	const clearAll = async () => {
+		try {
+			await AsyncStorage.clear()
+		} catch (e) {
+			// clear error
+		}
+
+		console.log('Done.')
+	}
+
+
 	const [userID, setUserID] = useState(-1);
 
+	clearAll();
+	getData();
+	storeData();
+	getData();
 
 	return (
 		<SafeAreaView style={SafeViewAndroid.AndroidSafeArea}>
