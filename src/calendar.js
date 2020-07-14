@@ -1,13 +1,17 @@
 import React, { Component, useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
-import { Checkbox, IconButton, Button, List } from 'react-native-paper';
+import { Image, View, StyleSheet, Alert, ScrollView } from 'react-native';
+import { Checkbox, IconButton, Button, List, Portal, Dialog, Paragraph, TextInput } from 'react-native-paper';
 import CalendarStrip from 'react-native-calendar-strip';
 
 import { Dimensions, Text } from 'react-native';
 import moment from 'moment';
 
 
-
+const logo = {
+	uri: 'https://reactnative.dev/img/tiny_logo.png',
+	width: 64,
+	height: 64
+};
 
 
 export function DashboardCalendar() {
@@ -38,6 +42,14 @@ export function DashboardCalendar() {
 			//daysOfWeek: currentEvent.repeat.length ? currentEvent.repeat : ''
 		},
 	]
+
+	const [exerciseDialog, setExerciseDialog] = useState(false);
+	const showExercise = () => setExerciseDialog(true);
+	const hideExercise = () => setExerciseDialog(false);
+	const [workoutDialog, setWorkoutDialog] = useState(false);
+	const showWorkout = () => setWorkoutDialog(true);
+	const hideWorkout = () => setWorkoutDialog(false);
+
 
 	const [selectedDate, setSelectedDate] = useState(moment().format('YYYY-MM-DD'));
 	const [workout, setWorkout] = useState(false);
@@ -89,99 +101,202 @@ export function DashboardCalendar() {
 	}
 
 
+
 	return (
 		<View style={styles.container}>
 			<CalendarStrip
 				ref={CalRef}
 
-				style={{ height: 150, paddingTop: 20, paddingBottom: 10 }}
+				style={{ height: '20%', paddingTop: 20, paddingBottom: 10 }}
 				numDaysInWeek={7}
 				startingDate={moment().startOf('week')}
 				useIsoWeekday={false}
 				daySelectionAnimation={{ type: 'border', duration: 0, borderWidth: 1, borderHighlightColor: 'black' }}
-				
+
 				markedDates={markedDatesFunc}
 				selectedDate={selectedDate}
 			/>
-			<List.Accordion 
-				title="test"
-			>
-				<View style={styles.day} >
-					<View style={{
-						width: '15%', alignItems: 'center',
-						padding: 10,
-						borderRightColor: 'grey',
-						borderRightWidth: StyleSheet.hairlineWidth,
-					}}>
-						<Checkbox
-							status={workout ? 'checked' : 'unchecked'}
-							onPress={() => {
-								setWorkout(!workout);
-							}}
-						/>
+			<ScrollView style={styles.scrollView}>
+				<List.Accordion title="test">
+					<View style={styles.day} >
+						<View style={{
+							width: '15%', alignItems: 'center',
+							padding: 10,
+							borderRightColor: 'grey',
+							borderRightWidth: StyleSheet.hairlineWidth,
+						}}>
+							<Checkbox
+								status={workout ? 'checked' : 'unchecked'}
+								onPress={() => {
+									setWorkout(!workout);
+								}}
+							/>
+						</View>
+						<View style={[styles.allEvents, true ? { width: '65%', backgroundColor: 'lightgrey' } : {}]}>
+							<Text>Test</Text>
+						</View>
+						<View style={{ width: '20%', flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', backgroundColor: 'lightgrey' }}>
+							<IconButton
+								icon='settings'
+								onPress={() => console.log('settings')}
+							/>
+							<IconButton
+								icon='delete'
+								onPress={() => console.log('delete')}
+							/>
+						</View>
 					</View>
-					<View style={[styles.allEvents, true ? { width: '65%', backgroundColor: 'lightgrey' } : {}]}>
-						<Text>Test</Text>
-					</View>
-					<View style={{ width: '20%', flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', backgroundColor: 'lightgrey' }}>
-						<IconButton
-							icon='settings'
-							onPress={() => console.log('settings')}
-						/>
-						<IconButton
-							icon='delete'
-							onPress={() => console.log('delete')}
-						/>
-					</View>
-				</View>
 
-			</List.Accordion>
-			<List.Accordion title="test">
-			<View style={styles.day} >
-				<View style={{
-					width: '15%', alignItems: 'center',
-					padding: 10,
-					borderRightColor: 'grey',
-					borderRightWidth: StyleSheet.hairlineWidth,
-				}}>
-					<Checkbox
-						status={workout ? 'checked' : 'unchecked'}
-						onPress={() => {
-							setWorkout(!workout);
-						}}
-					/>
-				</View>
-				<View style={[styles.allEvents, true ? { width: '65%', backgroundColor: 'lightgrey' } : {}]}>
-					<Text>Test</Text>
-				</View>
-				<View style={{ width: '20%', flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', backgroundColor: 'lightgrey' }}>
-					<IconButton
-						icon='settings'
-						onPress={() => console.log('settings')}
-					/>
-					<IconButton
-						icon='delete'
-						onPress={() => (Alert.alert(
-							"Are you sure you want to delete this exersise?",
-							"Deleting this exersise will only remove this one day",
-							[
-							  {
-								text: "Cancel",
-								onPress: () => console.log("Cancel Pressed"),
-								style: "cancel"
-							  },
-							  { text: "OK", onPress: () => console.log("OK Pressed") }
-							],
-							{ cancelable: false }
-						  ))}
-					/>
-				</View>
+				</List.Accordion>
+				<List.Accordion title="test">
+					<View style={styles.day} >
+						<View style={{
+							width: '15%', alignItems: 'center',
+							padding: 10,
+							borderRightColor: 'grey',
+							borderRightWidth: StyleSheet.hairlineWidth,
+						}}>
+							<Checkbox
+								status={workout ? 'checked' : 'unchecked'}
+								onPress={() => {
+									setWorkout(!workout);
+								}}
+							/>
+						</View>
+						<View style={[styles.allEvents, true ? { width: '65%', backgroundColor: 'lightgrey' } : {}]}>
+							<Text>Test</Text>
+						</View>
+						<View style={{ width: '20%', flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', backgroundColor: 'lightgrey' }}>
+							<IconButton
+								icon='settings'
+								onPress={() => console.log('settings')}
+							/>
+							<IconButton
+								icon='delete'
+								onPress={() => console.log('delete')}
+							/>
+						</View>
+					</View>
 
-			</View>
-			</List.Accordion>
-			<Button icon="alert-octagon" mode="contained" onPress={addEvent}>
-				Test
+				</List.Accordion>
+				<List.Accordion title="test">
+					<View style={styles.day} >
+						<View style={{
+							width: '15%', alignItems: 'center',
+							padding: 10,
+							borderRightColor: 'grey',
+							borderRightWidth: StyleSheet.hairlineWidth,
+						}}>
+							<Checkbox
+								status={workout ? 'checked' : 'unchecked'}
+								onPress={() => {
+									setWorkout(!workout);
+								}}
+							/>
+						</View>
+						<View style={[styles.allEvents, true ? { width: '65%', backgroundColor: 'lightgrey' } : {}]}>
+							<Text>Test</Text>
+						</View>
+						<View style={{ width: '20%', flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', backgroundColor: 'lightgrey' }}>
+							<IconButton
+								icon='settings'
+								onPress={() => console.log('settings')}
+							/>
+							<IconButton
+								icon='delete'
+								onPress={() => console.log('delete')}
+							/>
+						</View>
+					</View>
+
+				</List.Accordion>
+				<List.Accordion title="test">
+					<View style={styles.day} >
+						<View style={{
+							width: '15%', alignItems: 'center',
+							padding: 10,
+							borderRightColor: 'grey',
+							borderRightWidth: StyleSheet.hairlineWidth,
+						}}>
+							<Checkbox
+								status={workout ? 'checked' : 'unchecked'}
+								onPress={() => {
+									setWorkout(!workout);
+								}}
+							/>
+						</View>
+						<View style={[styles.allEvents, true ? { width: '65%', backgroundColor: 'lightgrey' } : {}]}>
+							<Text>Test</Text>
+						</View>
+						<View style={{ width: '20%', flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', backgroundColor: 'lightgrey' }}>
+							<IconButton
+								icon='settings'
+								onPress={() => console.log('settings')}
+							/>
+							<IconButton
+								icon='delete'
+								onPress={() => console.log('delete')}
+							/>
+						</View>
+					</View>
+
+				</List.Accordion>
+			</ScrollView>
+			<View style={{ flexDirection: 'row', justifyContent: 'space-evenly', margin: 10 }}>
+				<Button
+					style={{ width: '40%' }}
+					mode={"contained"}
+					onPress={showExercise}
+				>
+					Add Exercise
 				</Button>
+				<Button
+					style={{ width: '40%' }}
+					mode={"contained"}
+					onPress={showWorkout}
+				>
+					Add Workout
+				</Button>
+			</View>
+
+			<Portal>
+				<Dialog visible={exerciseDialog} onDismiss={hideExercise}>
+					<Dialog.Title>Add Exercise</Dialog.Title>
+					<Dialog.Content>
+						<TextInput
+							label="Exercise Name"
+							mode="outlined"
+						/>
+						<TextInput
+							label="Notes"
+							mode="outlined"
+							multiline={true}
+							numberOfLines={3}
+						/>
+					</Dialog.Content>
+					<Dialog.Actions>
+						<Button onPress={hideExercise}>Done</Button>
+					</Dialog.Actions>
+				</Dialog>
+				<Dialog visible={workoutDialog} onDismiss={hideWorkout}>
+					<Dialog.Title>Add Workout</Dialog.Title>
+					<Dialog.Content>
+					<TextInput
+							label="Workout Name"
+							mode="outlined"
+						/>
+						<TextInput
+							label="Notes"
+							mode="outlined"
+							multiline={true}
+							numberOfLines={3}
+						/>
+					</Dialog.Content>
+					<Dialog.Actions>
+						<Button onPress={hideWorkout}>Done</Button>
+					</Dialog.Actions>
+				</Dialog>
+			</Portal>
 		</View>
 	)
 }
@@ -206,10 +321,15 @@ export function PageCalendar() {
 const styles = StyleSheet.create({
 	container: {
 		width: '100%',
+		height: '100%',
 		flex: 1
 	},
+	scrollView: {
+		flex: 1,
+		height: '70%'
+	},
 	component: {
-		width: Dimensions.get('window').width,
+		width: '100%',//Dimensions.get('window').width,
 		alignItems: 'center',
 		backgroundColor: 'white',
 		borderColor: 'grey',

@@ -13,6 +13,7 @@ import { Formik } from 'formik';
 import * as Yup from 'yup';
 import axios from 'axios';
 import AsyncStorage from '@react-native-community/async-storage';
+import { Provider as PaperProvider } from 'react-native-paper';
 
 
 const width = Dimensions.get('window').width;
@@ -50,10 +51,10 @@ const clearData = async () => {
 //<Image source={require('./assets/logo.png')} style={{ alignContent:'center', resizeMode:'center', width: (width * .8) }} />
 
 const DashboardRoute = () =>
-	<View >
+	<View style={{height:'100%'}}>
 		<Logo
 			width='100%'
-			height='20%'
+			height='10%'
 
 			style={styles.container}
 		/>
@@ -381,11 +382,13 @@ const App = () => {
 	}, [] );
 
 	return (
-		<SafeAreaView style={SafeViewAndroid.AndroidSafeArea}>
-			{jwt === null ? <ActivityIndicator animating={true} size='large' style={{height:'100%',display:"flex",justifyContent:"center",alignItems: "center"}} /> 
-				: (jwt <= -1 ? <WelcomePage jwt={setJWTfunc}/> : <Dashboard />)}
-			
-		</SafeAreaView>
+		<PaperProvider>
+			<SafeAreaView style={SafeViewAndroid.AndroidSafeArea}>
+				{jwt === null ? <ActivityIndicator animating={true} size='large' style={{height:'100%',display:"flex",justifyContent:"center",alignItems: "center"}} /> 
+					: (jwt <= -1 ? <WelcomePage jwt={setJWTfunc}/> : <Dashboard />)}
+				
+			</SafeAreaView>
+		</PaperProvider>
 	)
 }
 
