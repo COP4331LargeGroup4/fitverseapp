@@ -71,6 +71,9 @@ const RecentsRoute = () =>
 		<Text>Recents</Text>
 		<Text>Route</Text>
 		<Text>test</Text>
+		<Button icon="alert-octagon" mode="contained" onPress={clearData}>
+				Test
+				</Button>
 	</View >;
 
 const ProfileRoute = () =>
@@ -115,7 +118,7 @@ const styles = StyleSheet.create({
 	}
 });
 
-const WelcomePage = () => {
+const WelcomePage = ({jwt}) => {
 	const [pageState, setPageState] = useState('signin');
 
 	const [email, setEmail] = useState(null);
@@ -123,11 +126,6 @@ const WelcomePage = () => {
 
 	const [firstname, setFirstname] = useState(null);
 	const [lastname, setLastname] = useState(null);
-
-	const ValidateEmail = (email) => {
-		console.log(email);
-		setEmail(email);
-	}
 
 	return (
 		<>
@@ -155,7 +153,7 @@ const WelcomePage = () => {
 			{pageState == 'signin' ?
 				<View>
 					<Text style={{ textAlign: 'center' }}>Log in to your fitverse account</Text>
-					<SignInForm />
+					<SignInForm jwt={jwt} />
 					<View>
 						<Text>Forgot password?</Text>
 					</View>
@@ -163,7 +161,7 @@ const WelcomePage = () => {
 				:
 				<View>
 					<Text style={{ textAlign: 'center' }}>Sign up for a fitverse account</Text>
-					<SignUpForm />
+					<SignUpForm jwt={jwt} />
 				</View>
 
 			}
@@ -171,11 +169,9 @@ const WelcomePage = () => {
 	);
 }
 
-const getJWT = () => {
-	const [jwt, setJWT] = useState
-}
+const SignInForm = ({jwt}) => {
+	const [sending, setSending] = useState(false);
 
-const SignInForm = () => {
 	return (
 		<Formik
 			initialValues={{ email: '', password: '' }}
@@ -188,9 +184,14 @@ const SignInForm = () => {
 					.required("Password is required"),
 			})}
 			onSubmit={values => {
-				console.log(1);
-				axios.post(baseAPIURL + '/api/user/login', { email: values.email, password: values.password })
-					.then((data) => console.log(data.data))
+				setSending(true);
+				let creds = { email: values.email, password: values.password };
+				axios.post(baseAPIURL + '/api/user/login', creds)
+					.then((data) => {
+						setData('usercreds', JSON.stringify(creds));
+						jwt(data.data.token);
+						console.log(data.data.token)
+					})
 					.catch((data) => console.log(data));
 			}}
 		>
@@ -203,6 +204,7 @@ const SignInForm = () => {
 						value={values.email}
 						mode='outlined'
 						error={touched.email && errors.email}
+						disabled={sending}
 					/>
 					<HelperText type="error" visible={touched.email && errors.email}>{touched.email && errors.email}</HelperText>
 					<TextInput
@@ -213,16 +215,26 @@ const SignInForm = () => {
 						mode='outlined'
 						secureTextEntry={true}
 						error={touched.password && errors.password}
+						disabled={sending}
 					/>
 					<HelperText type="error" visible={touched.password && errors.password}>{touched.password && errors.password}</HelperText>
-					<Button onPress={handleSubmit} mode='contained'>Submit</Button>
+					<Button 
+						onPress={handleSubmit} 
+						mode='contained'
+						disabled={!errors}
+						loading={sending}
+					>
+						Submit
+					</Button>
 				</View>
 			)}
 		</Formik>
 	)
 }
 
-const SignUpForm = () => {
+const SignUpForm = ({jwt}) => {
+	const [sending, setSending] = useState(false);
+
 	return (
 		<Formik
 			initialValues={{ firstname: '', lastname: '', email: '', password: '' }}
@@ -238,7 +250,20 @@ const SignUpForm = () => {
 					.min(8, "Password must contain at least 8 character")
 					.required("Password is required"),
 			})}
-			onSubmit={values => console.log(values)}
+			onSubmit={values => {
+				setSending(true);
+				axios.post(baseAPIURL + '/api/user/signup', { firstName: values.firstname, lastName: values.lastname, email: values.email, password: values.password })
+					.then((data) => {
+						setData('usercreds', JSON.stringify({ email: values.email, password: values.password }))
+						jwt(data.data.token);
+						console.log(data.data.token);
+						setSending(false);
+					})
+					.catch((data) => {
+						console.log(data);
+						setSending(false);
+					});
+			}}
 		>
 			{({ handleChange, handleBlur, handleSubmit, touched, errors, values }) => (
 				<View>
@@ -253,6 +278,7 @@ const SignUpForm = () => {
 								required
 								style={{ justifyContent: 'center' }}
 								error={touched.firstname && errors.firstname}
+								disabled={sending}
 							/>
 							<HelperText type='error' visible={touched.firstname && errors.firstname}>
 								{touched.firstname && errors.firstname}
@@ -267,6 +293,7 @@ const SignUpForm = () => {
 								mode='outlined'
 								style={{ justifyContent: 'center' }}
 								error={touched.lastname && errors.lastname}
+								disabled={sending}
 							/>
 							<HelperText type='error' visible={touched.lastname && errors.lastname}>
 								{touched.lastname && errors.lastname}
@@ -281,6 +308,7 @@ const SignUpForm = () => {
 							value={values.email}
 							mode='outlined'
 							error={touched.email && errors.email}
+							disabled={sending}
 						/>
 						<HelperText type='error' visible={touched.email && errors.email}>
 							{touched.email && errors.email}
@@ -295,6 +323,7 @@ const SignUpForm = () => {
 							mode='outlined'
 							secureTextEntry={true}
 							error={touched.password && errors.password}
+							disabled={sending}
 						/>
 						<HelperText type='error' visible={touched.password && errors.password}>
 							{touched.password && errors.password}
@@ -304,6 +333,7 @@ const SignUpForm = () => {
 						onPress={handleSubmit}
 						mode='contained'
 						disabled={!errors}
+						loading={sending}
 					>
 						Submit
 			</Button>
@@ -315,17 +345,18 @@ const SignUpForm = () => {
 
 const SilentLogin = (email, password) => {
 	axios.post(baseAPIURL + '/api/user/login', { email: email, password: password })
-		.then((data) => {return data})
+		.then((data) => {console.log(data); return data})
 		.catch((data) => console.log(data));
 }
 
 const App = () => {
 
 	const [jwt, setJWT] = useState(null);
+	const setJWTfunc = (token) => setJWT(token);
 
+	//const usercreds = JSON.stringify({email:'',password:''});
 	
-	//setData('usercreds', usercreds);
-	clearData();
+	//clearData();
 
 	const getUsercreds = async() => {
 		let creds = await getData('usercreds');
@@ -352,7 +383,7 @@ const App = () => {
 	return (
 		<SafeAreaView style={SafeViewAndroid.AndroidSafeArea}>
 			{jwt === null ? <ActivityIndicator animating={true} size='large' style={{height:'100%',display:"flex",justifyContent:"center",alignItems: "center"}} /> 
-				: (jwt <= -1 ? <WelcomePage /> : <Dashboard />)}
+				: (jwt <= -1 ? <WelcomePage jwt={setJWTfunc}/> : <Dashboard />)}
 			
 		</SafeAreaView>
 	)
