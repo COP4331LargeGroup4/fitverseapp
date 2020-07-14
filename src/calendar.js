@@ -5,19 +5,67 @@ import CalendarStrip from 'react-native-calendar-strip';
 
 import { Dimensions, Text } from 'react-native';
 import moment from 'moment';
+import axios from 'axios';
+
+import StorageUtil from './Storage';
+
+const Storage = new StorageUtil();
+
+const baseAPIURL = 'https://fitverse.herokuapp.com';
 
 
-const logo = {
-	uri: 'https://reactnative.dev/img/tiny_logo.png',
-	width: 64,
-	height: 64
-};
+getWorkouts = async (startDate, endDate) => {
+	var token = await Storage.getData('jwt');
+
+	var response = await axios.post(baseAPIURL + "/api/workout/readAllDateRange", {
+		token: token,
+		startDate: startDate,
+		endDate: endDate
+	}, {
+		headers: {
+			'Access-Control-Allow-Origin': '*',
+		},
+		mode: 'cors'
+	})
+
+	return response.data;
+}
+
 
 
 export function DashboardCalendar() {
 	const CalRef = useRef(null);
 
-	var dayToAdd = moment().format('YYYY-MM-DD')
+	var dayToAdd = moment().format('YYYY-MM-DD');
+
+	var numDaysInWeek = 7
+	var startDate = moment().startOf('week');
+	var endDate = moment().add(numDaysInWeek, 'days');
+
+	const [events, setEvents] = useState();
+
+	const getEvents = async () => {
+		var workouts = await getWorkouts(startDate, endDate);
+
+		//console.log(workouts);
+		setEvents(workouts);
+	}
+
+	useEffect(() => {
+		getEvents();
+	}, []);
+
+	//console.log("TEST");
+
+	try {
+		//console.log(events.workouts[0].weekly);
+
+		console.log(events.workouts[0].weekly)
+	}
+	catch
+	{
+		console.log('events not mounted yet');
+	}
 
 	var myEventsList = [
 		{
@@ -57,7 +105,7 @@ export function DashboardCalendar() {
 
 
 
-	handleOnPressDate = (date) => {
+	const handleOnPressDate = (date) => {
 		setSelectedDate(date);
 		//console.log(selectedDate);
 		/*var events = [];
@@ -79,7 +127,7 @@ export function DashboardCalendar() {
 		CalRef.current.forceUpdate();
 	}
 
-	markedDatesFunc = date => {
+	const markedDatesFunc = date => {
 		if (date.isoWeekday() === 4) { // Thursdays
 			return {
 				dots: [{
@@ -100,6 +148,52 @@ export function DashboardCalendar() {
 		return {};
 	}
 
+	const WorkoutAcordian = () => {
+
+		try {
+			return (
+				<List.Accordion title={events.workouts[0].name}>
+					<View style={styles.day} >
+						<View style={{
+							width: '15%', alignItems: 'center',
+							padding: 10,
+							borderRightColor: 'grey',
+							borderRightWidth: StyleSheet.hairlineWidth,
+						}}>
+							<Checkbox
+								status={workout ? 'checked' : 'unchecked'}
+								onPress={() => {
+									setWorkout(!workout);
+								}}
+							/>
+						</View>
+						<View style={[styles.allEvents, true ? { width: '65%', backgroundColor: 'lightgrey' } : {}]}>
+							<Text>Test</Text>
+						</View>
+						<View style={{ width: '20%', flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', backgroundColor: 'lightgrey' }}>
+							<IconButton
+								icon='settings'
+								onPress={() => console.log('settings')}
+							/>
+							<IconButton
+								icon='delete'
+								onPress={() => console.log('delete')}
+							/>
+						</View>
+					</View>
+
+				</List.Accordion>
+			)
+		}
+		catch {
+			return (
+				<Text>No workouts</Text>
+			)
+		}
+
+
+	}
+
 
 
 	return (
@@ -108,8 +202,8 @@ export function DashboardCalendar() {
 				ref={CalRef}
 
 				style={{ height: '20%', paddingTop: 20, paddingBottom: 10 }}
-				numDaysInWeek={7}
-				startingDate={moment().startOf('week')}
+				numDaysInWeek={numDaysInWeek}
+				startingDate={startDate}
 				useIsoWeekday={false}
 				daySelectionAnimation={{ type: 'border', duration: 0, borderWidth: 1, borderHighlightColor: 'black' }}
 
@@ -117,130 +211,8 @@ export function DashboardCalendar() {
 				selectedDate={selectedDate}
 			/>
 			<ScrollView style={styles.scrollView}>
-				<List.Accordion title="test">
-					<View style={styles.day} >
-						<View style={{
-							width: '15%', alignItems: 'center',
-							padding: 10,
-							borderRightColor: 'grey',
-							borderRightWidth: StyleSheet.hairlineWidth,
-						}}>
-							<Checkbox
-								status={workout ? 'checked' : 'unchecked'}
-								onPress={() => {
-									setWorkout(!workout);
-								}}
-							/>
-						</View>
-						<View style={[styles.allEvents, true ? { width: '65%', backgroundColor: 'lightgrey' } : {}]}>
-							<Text>Test</Text>
-						</View>
-						<View style={{ width: '20%', flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', backgroundColor: 'lightgrey' }}>
-							<IconButton
-								icon='settings'
-								onPress={() => console.log('settings')}
-							/>
-							<IconButton
-								icon='delete'
-								onPress={() => console.log('delete')}
-							/>
-						</View>
-					</View>
 
-				</List.Accordion>
-				<List.Accordion title="test">
-					<View style={styles.day} >
-						<View style={{
-							width: '15%', alignItems: 'center',
-							padding: 10,
-							borderRightColor: 'grey',
-							borderRightWidth: StyleSheet.hairlineWidth,
-						}}>
-							<Checkbox
-								status={workout ? 'checked' : 'unchecked'}
-								onPress={() => {
-									setWorkout(!workout);
-								}}
-							/>
-						</View>
-						<View style={[styles.allEvents, true ? { width: '65%', backgroundColor: 'lightgrey' } : {}]}>
-							<Text>Test</Text>
-						</View>
-						<View style={{ width: '20%', flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', backgroundColor: 'lightgrey' }}>
-							<IconButton
-								icon='settings'
-								onPress={() => console.log('settings')}
-							/>
-							<IconButton
-								icon='delete'
-								onPress={() => console.log('delete')}
-							/>
-						</View>
-					</View>
-
-				</List.Accordion>
-				<List.Accordion title="test">
-					<View style={styles.day} >
-						<View style={{
-							width: '15%', alignItems: 'center',
-							padding: 10,
-							borderRightColor: 'grey',
-							borderRightWidth: StyleSheet.hairlineWidth,
-						}}>
-							<Checkbox
-								status={workout ? 'checked' : 'unchecked'}
-								onPress={() => {
-									setWorkout(!workout);
-								}}
-							/>
-						</View>
-						<View style={[styles.allEvents, true ? { width: '65%', backgroundColor: 'lightgrey' } : {}]}>
-							<Text>Test</Text>
-						</View>
-						<View style={{ width: '20%', flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', backgroundColor: 'lightgrey' }}>
-							<IconButton
-								icon='settings'
-								onPress={() => console.log('settings')}
-							/>
-							<IconButton
-								icon='delete'
-								onPress={() => console.log('delete')}
-							/>
-						</View>
-					</View>
-
-				</List.Accordion>
-				<List.Accordion title="test">
-					<View style={styles.day} >
-						<View style={{
-							width: '15%', alignItems: 'center',
-							padding: 10,
-							borderRightColor: 'grey',
-							borderRightWidth: StyleSheet.hairlineWidth,
-						}}>
-							<Checkbox
-								status={workout ? 'checked' : 'unchecked'}
-								onPress={() => {
-									setWorkout(!workout);
-								}}
-							/>
-						</View>
-						<View style={[styles.allEvents, true ? { width: '65%', backgroundColor: 'lightgrey' } : {}]}>
-							<Text>Test</Text>
-						</View>
-						<View style={{ width: '20%', flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', backgroundColor: 'lightgrey' }}>
-							<IconButton
-								icon='settings'
-								onPress={() => console.log('settings')}
-							/>
-							<IconButton
-								icon='delete'
-								onPress={() => console.log('delete')}
-							/>
-						</View>
-					</View>
-
-				</List.Accordion>
+				<WorkoutAcordian />
 			</ScrollView>
 			<View style={{ flexDirection: 'row', justifyContent: 'space-evenly', margin: 10 }}>
 				<Button
@@ -281,7 +253,7 @@ export function DashboardCalendar() {
 				<Dialog visible={workoutDialog} onDismiss={hideWorkout}>
 					<Dialog.Title>Add Workout</Dialog.Title>
 					<Dialog.Content>
-					<TextInput
+						<TextInput
 							label="Workout Name"
 							mode="outlined"
 						/>

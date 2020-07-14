@@ -12,40 +12,20 @@ import { DashboardCalendar, PageCalendar } from './src/calendar';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import axios from 'axios';
-import AsyncStorage from '@react-native-community/async-storage';
 import { Provider as PaperProvider } from 'react-native-paper';
+import StorageUtil from './src/Storage';
+
+const Storage = new StorageUtil();
 
 
 const width = Dimensions.get('window').width;
 
+// also used in calendar.js
 const baseAPIURL = 'https://fitverse.herokuapp.com';
 
 
 
-const getData = async (token) => {
-	try {
-		return await AsyncStorage.getItem(token);
-	} catch (e) {
-		console.log(e);
-	}
-}
 
-const setData = async (key, value) => {
-	try {
-		await AsyncStorage.setItem(key, value);
-	} catch (e) {
-		console.log(e);
-	}
-}
-
-const clearData = async () => {
-	try {
-		await AsyncStorage.clear();
-	} catch (e) {
-		console.log(e);
-	}
-	console.log('Storage Cleared');
-}
 
 
 //<Image source={require('./assets/logo.png')} style={{ alignContent:'center', resizeMode:'center', width: (width * .8) }} />
@@ -72,7 +52,7 @@ const RecentsRoute = () =>
 		<Text>Recents</Text>
 		<Text>Route</Text>
 		<Text>test</Text>
-		<Button icon="alert-octagon" mode="contained" onPress={clearData}>
+		<Button icon="alert-octagon" mode="contained" onPress={Storage.clearData}>
 				Test
 				</Button>
 	</View >;
@@ -189,7 +169,8 @@ const SignInForm = ({jwt}) => {
 				let creds = { email: values.email, password: values.password };
 				axios.post(baseAPIURL + '/api/user/login', creds)
 					.then((data) => {
-						setData('usercreds', JSON.stringify(creds));
+						Storage.setData('usercreds', JSON.stringify(creds));
+						Storage.setData('jwt', data.data.token);
 						jwt(data.data.token);
 						console.log(data.data.token)
 					})
@@ -255,8 +236,9 @@ const SignUpForm = ({jwt}) => {
 				setSending(true);
 				axios.post(baseAPIURL + '/api/user/signup', { firstName: values.firstname, lastName: values.lastname, email: values.email, password: values.password })
 					.then((data) => {
-						setData('usercreds', JSON.stringify({ email: values.email, password: values.password }))
-						jwt(data.data.token);
+						Storage.setData('usercreds', JSON.stringify({ email: values.email, password: values.password }))
+						Storage.setData('jwt', data.data.token);
+						jwt(data.data.token); // redundant?
 						console.log(data.data.token);
 						setSending(false);
 					})
@@ -346,7 +328,12 @@ const SignUpForm = ({jwt}) => {
 
 const SilentLogin = (email, password) => {
 	axios.post(baseAPIURL + '/api/user/login', { email: email, password: password })
-		.then((data) => {console.log(data); return data})
+		.then((data) => {
+			//console.log(data.data); 
+			//console.log("token " + data.data.token)
+			Storage.setData('jwt', data.data.token)
+			return data;
+		})
 		.catch((data) => console.log(data));
 }
 
@@ -357,10 +344,10 @@ const App = () => {
 
 	//const usercreds = JSON.stringify({email:'',password:''});
 	
-	//clearData();
+	//Storage.clearData();
 
 	const getUsercreds = async() => {
-		let creds = await getData('usercreds');
+		let creds = await Storage.getData('usercreds');
 
 		return (creds === null ? null : JSON.parse(creds))
 	}
