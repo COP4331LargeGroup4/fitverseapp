@@ -10,7 +10,7 @@ export function Exercises() {
 
 	const [data, setData] = useState();
 
-	const [opened, setOpened] = useState([])
+	const [opened, setOpened] = useState();
 
 	const getData = async () => {
 		var exercises = await ExerciseWorkout.getExercises();
@@ -25,7 +25,7 @@ export function Exercises() {
 
 	const renderItem = ({ item }) => {
 
-		var state = opened.includes(item._id);
+		const state = (item._id === opened)
 
 		return (
 			<>
@@ -36,26 +36,16 @@ export function Exercises() {
 					borderRightColor: 'grey',
 					borderRightWidth: StyleSheet.hairlineWidth,
 				}}>
-					<IconButton
+					{item.notes != null ? <IconButton
 						icon={state ? "chevron-down" : "chevron-up"}
 						onPress={() => {
-							var arr = opened;
-
-							if (state) {
-								arr = arr.splice(arr.indexOf(item._id), 1)
-								console.log(arr);
-								setOpened(arr);
-							}
-							else {
-								console.log([...arr, item._id]);
-								setOpened([...arr, item._id]);
-							}
-							console.log(opened);
+							// TODO: change to array to allow multiple opened at the same time
+							setOpened(state ? null : item._id);
 						}}
-					/>
+					/> : null}
 				</View>
 				<View style={[styles.allEvents, true ? { width: '65%', backgroundColor: 'lightgrey' } : {}]}>
-					<Text>{item.name}</Text>
+					<Text style={{margin:5}}>{item.name}</Text>
 				</View>
 				<View style={{ width: '20%', flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', backgroundColor: 'lightgrey' }}>
 					<IconButton
