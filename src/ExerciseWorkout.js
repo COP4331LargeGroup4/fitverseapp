@@ -22,7 +22,7 @@ export default class ExerciseWorkoutUtil {
 		return response.data;
 	}
 
-	makeExercise = async (name,) => {
+	makeExercise = async (name) => {
 		var token = await Storage.getData('jwt');
 
 		var response = await axios.post(baseAPIURL + "/api/exercise/create", {
@@ -36,6 +36,42 @@ export default class ExerciseWorkoutUtil {
 
 		return response.data;
 	}
+
+	updateExercise = async (id, name, notes) => {
+		var token = await Storage.getData('jwt');
+
+		var response = await axios.post(baseAPIURL + "/api/exercise/update", {
+			token: token,
+			id: id,
+			name: name,
+			notes: notes,
+		}, {
+			headers: {
+				'Access-Control-Allow-Origin': '*',
+			},
+			mode: 'cors'
+		})
+
+		return response.data;
+	}
+
+	deleteExercise = async (id) => {
+		var token = await Storage.getData('jwt');
+
+		var response = await axios.post(baseAPIURL + "/api/exercise/delete", {
+			token: token,
+			id: id,
+		}, {
+			headers: {
+				'Access-Control-Allow-Origin': '*',
+			},
+			mode: 'cors'
+		})
+
+		return response.data;
+	}
+
+
 
 
 
