@@ -1,37 +1,12 @@
-import React, { Component, useState, useEffect, useRef } from 'react';
-import { Image, View, StyleSheet, Alert, ScrollView } from 'react-native';
-import { Checkbox, IconButton, Button, List, Portal, Dialog, Paragraph, TextInput } from 'react-native-paper';
+import React, { useState, useEffect, useRef } from 'react';
+import { Text, View, StyleSheet, Alert, ScrollView } from 'react-native';
+import { Checkbox, IconButton, Button, List, Portal, Dialog, TextInput } from 'react-native-paper';
 import CalendarStrip from 'react-native-calendar-strip';
-
-import { Dimensions, Text } from 'react-native';
 import moment from 'moment';
-import axios from 'axios';
 
-import StorageUtil from './Storage';
+import ExerciseWorkoutUtil from './ExerciseWorkout';
 
-const Storage = new StorageUtil();
-
-const baseAPIURL = 'https://fitverse.herokuapp.com';
-
-
-getWorkouts = async (startDate, endDate) => {
-	var token = await Storage.getData('jwt');
-
-	var response = await axios.post(baseAPIURL + "/api/workout/readAllDateRange", {
-		token: token,
-		startDate: startDate,
-		endDate: endDate
-	}, {
-		headers: {
-			'Access-Control-Allow-Origin': '*',
-		},
-		mode: 'cors'
-	})
-
-	return response.data;
-}
-
-
+const ExerciseWorkout = new ExerciseWorkoutUtil();
 
 export function DashboardCalendar() {
 	const CalRef = useRef(null);
@@ -45,7 +20,7 @@ export function DashboardCalendar() {
 	const [events, setEvents] = useState();
 
 	const getEvents = async () => {
-		var workouts = await getWorkouts(startDate, endDate);
+		var workouts = await ExerciseWorkout.getWorkouts(startDate, endDate);
 
 		//console.log(workouts);
 		setEvents(workouts);
@@ -60,7 +35,7 @@ export function DashboardCalendar() {
 	try {
 		//console.log(events.workouts[0].weekly);
 
-		console.log(events.workouts[0].weekly)
+		//console.log(events.workouts[0].weekly)
 	}
 	catch
 	{
@@ -103,9 +78,11 @@ export function DashboardCalendar() {
 	const [workout, setWorkout] = useState(false);
 	const [markedDates, setMarkedDates] = useState(myEventsList.map(a => a.date));
 
+	const [workoutViews, setWorkoutViews] = useState(undefined);
 
 
-	const handleOnPressDate = (date) => {
+
+	const onDateSelected = (date) => {
 		setSelectedDate(date);
 		//console.log(selectedDate);
 		/*var events = [];
@@ -128,7 +105,27 @@ export function DashboardCalendar() {
 	}
 
 	const markedDatesFunc = date => {
-		if (date.isoWeekday() === 4) { // Thursdays
+
+		var dots = [];
+
+		try {
+			events.workouts.forEach(workout => {
+				if (workout.weekly.includes(moment(date).day())) {
+					dots = [...dots, { color: "#000000", selectedColor: "#333333" }];
+				}
+			})
+		}
+		catch {
+			console.log('not loaded');
+		}
+		
+
+		return { dots: dots };
+
+
+
+
+		/*if (date.isoWeekday() === 4) { // Thursdays
 			return {
 				dots: [{
 					color: "#000000",
@@ -145,45 +142,71 @@ export function DashboardCalendar() {
 				}]
 			};
 		}
-		return {};
+		return {};*/
 	}
+
 
 	const WorkoutAcordian = () => {
 
 		try {
-			return (
-				<List.Accordion title={events.workouts[0].name}>
-					<View style={styles.day} >
-						<View style={{
-							width: '15%', alignItems: 'center',
-							padding: 10,
-							borderRightColor: 'grey',
-							borderRightWidth: StyleSheet.hairlineWidth,
-						}}>
-							<Checkbox
-								status={workout ? 'checked' : 'unchecked'}
-								onPress={() => {
-									setWorkout(!workout);
-								}}
-							/>
-						</View>
-						<View style={[styles.allEvents, true ? { width: '65%', backgroundColor: 'lightgrey' } : {}]}>
-							<Text>Test</Text>
-						</View>
-						<View style={{ width: '20%', flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', backgroundColor: 'lightgrey' }}>
-							<IconButton
-								icon='settings'
-								onPress={() => console.log('settings')}
-							/>
-							<IconButton
-								icon='delete'
-								onPress={() => console.log('delete')}
-							/>
-						</View>
-					</View>
 
-				</List.Accordion>
-			)
+			let workoutList = [];
+
+			events.workouts.forEach(workout => {
+				//console.log(workout);
+				//console.log('date ' + moment(selectedDate).isoWeekday() == 7 ? 0 : moment(selectedDate).isoWeekday());
+
+				//var index = workoutDone.length();
+				//setWorkoutDone([...workoutDone, false])
+
+				if (workout.weekly.includes(moment(selectedDate).day())) {
+
+					workoutList.push(
+						<List.Accordion title={workout.name} key={workout._id} expanded={true}>
+							<View style={styles.day} >
+								<View style={{
+									width: '15%', alignItems: 'center',
+									padding: 10,
+									borderRightColor: 'grey',
+									borderRightWidth: StyleSheet.hairlineWidth,
+								}}>
+									<Checkbox
+										status={false ? 'checked' : 'unchecked'}
+										onPress={() => {
+											console.log('checkbox ' + workout.name);
+											//setWorkoutDone()
+										}}
+									/>
+								</View>
+								<View style={[styles.allEvents, true ? { width: '65%', backgroundColor: 'lightgrey' } : {}]}>
+									<Text>Test</Text>
+								</View>
+								<View style={{ width: '20%', flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', backgroundColor: 'lightgrey' }}>
+									<IconButton
+										icon='settings'
+										onPress={() => console.log('settings')}
+									/>
+									<IconButton
+										icon='delete'
+										onPress={() => console.log('delete')}
+									/>
+								</View>
+							</View>
+						</List.Accordion>
+					)
+				}
+			})
+
+
+			console.log(workoutList.length)
+
+			if (workoutList.length == 0) {
+				return (<Text>No workouts</Text>);
+			}
+			return (workoutList);
+
+
+
 		}
 		catch {
 			return (
@@ -206,7 +229,7 @@ export function DashboardCalendar() {
 				startingDate={startDate}
 				useIsoWeekday={false}
 				daySelectionAnimation={{ type: 'border', duration: 0, borderWidth: 1, borderHighlightColor: 'black' }}
-
+				onDateSelected={onDateSelected}
 				markedDates={markedDatesFunc}
 				selectedDate={selectedDate}
 			/>

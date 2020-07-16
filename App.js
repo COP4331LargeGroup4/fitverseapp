@@ -9,6 +9,7 @@ import SafeViewAndroid from "./components/SafeAndroidView";
 import Profile from './src/profile';
 import Logo from './assets/logo.svg'
 import { DashboardCalendar, PageCalendar } from './src/calendar';
+import { Exercises } from './src/exercises';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import axios from 'axios';
@@ -47,19 +48,17 @@ const CalendarRoute = () =>
 		<PageCalendar />
 	</View >;
 
-const RecentsRoute = () =>
+const ExercisesRoute = () =>
 	<View >
-		<Text>Recents</Text>
-		<Text>Route</Text>
-		<Text>test</Text>
-		<Button icon="alert-octagon" mode="contained" onPress={Storage.clearData}>
-				Test
-				</Button>
+		<Exercises />
 	</View >;
 
 const ProfileRoute = () =>
 	<View >
 		<Profile />
+		<Button icon="alert-octagon" mode="contained" onPress={Storage.clearData}>
+				Test
+				</Button>
 	</View >;
 
 const Dashboard = () => {
@@ -68,14 +67,14 @@ const Dashboard = () => {
 	const [routes] = React.useState([
 		{ key: 'dashboard', title: 'Dashboard', icon: 'home' },
 		{ key: 'calendar', title: 'Calendar', icon: 'calendar' },
-		{ key: 'recents', title: 'Recents', icon: 'history' },
+		{ key: 'exercises', title: 'My Exercises', icon: 'weight' },
 		{ key: 'profile', title: 'Profile', icon: 'account' }, // TODO: Change to https://materialdesignicons.com/icon/account-cowboy-hat
 	]);
 
 	const renderScene = BottomNavigation.SceneMap({
 		dashboard: DashboardRoute,
 		calendar: CalendarRoute,
-		recents: RecentsRoute,
+		exercises: ExercisesRoute,
 		profile: ProfileRoute,
 	});
 
