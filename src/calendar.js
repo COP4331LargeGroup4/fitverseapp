@@ -8,7 +8,7 @@ import ExerciseWorkoutUtil from './ExerciseWorkout';
 
 const ExerciseWorkout = new ExerciseWorkoutUtil();
 
-export function DashboardCalendar() {
+export default function Calendar() {
 	const CalRef = useRef(null);
 
 	var dayToAdd = moment().format('YYYY-MM-DD');
@@ -72,6 +72,9 @@ export function DashboardCalendar() {
 	const [workoutDialog, setWorkoutDialog] = useState(false);
 	const showWorkout = () => setWorkoutDialog(true);
 	const hideWorkout = () => setWorkoutDialog(false);
+
+	const [dialogName, setDialogName] = useState();
+	const [dialogNotes, setDialogNotes] = useState();
 
 
 	const [selectedDate, setSelectedDate] = useState(moment().format('YYYY-MM-DD'));
@@ -261,16 +264,23 @@ export function DashboardCalendar() {
 						<TextInput
 							label="Exercise Name"
 							mode="outlined"
+							value={dialogName}
+							onChangeText={(text) =>{setDialogName(text)}}
 						/>
 						<TextInput
 							label="Notes"
 							mode="outlined"
+							value={dialogNotes}
+							onChangeText={(text) =>{setDialogNotes(text)}}
 							multiline={true}
 							numberOfLines={3}
 						/>
 					</Dialog.Content>
 					<Dialog.Actions>
-						<Button onPress={hideExercise}>Done</Button>
+						<Button onPress={()=> {
+							ExerciseWorkout.makeExercise(dialogName, dialogNotes);
+							hideExercise();
+						}}>Done</Button>
 					</Dialog.Actions>
 				</Dialog>
 				<Dialog visible={workoutDialog} onDismiss={hideWorkout}>
@@ -292,17 +302,6 @@ export function DashboardCalendar() {
 					</Dialog.Actions>
 				</Dialog>
 			</Portal>
-		</View>
-	)
-}
-
-
-export function PageCalendar() {
-	return (
-		<View style={styles.container}>
-			<CalendarStrip
-				style={{ height: 150, paddingTop: 20, paddingBottom: 10 }}
-			/>
 		</View>
 	)
 }

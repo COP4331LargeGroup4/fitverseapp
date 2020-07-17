@@ -20,8 +20,7 @@ export function Exercises() {
 
 	const [data, setData] = useState();
 
-	const [opened, setOpened] = useState();
-
+	const [makeDialog, setMakeDialog] = useState(false);
 	const [editDialog, setEditDialog] = useState(false);
 	const [deleteDialog, setDeleteDialog] = useState(false);
 	const [exercise, setExercise] = useState(null);
@@ -37,58 +36,63 @@ export function Exercises() {
 		getData();
 	}, []);
 
-	//console.log(data);
 
-	const renderItem = ({ item }) => {
+	const MakeExerciseDialog = () => {
 
-		const state = (item._id === opened)
+		const dismiss = () => setMakeDialog(false);
+
+		const [name, setName] = useState();
+		const [notes, setNotes] = useState();
+
+		const [loading, setLoading] = useState(false);
 
 		return (
-			<>
-				<View style={styles.day} >
-					<View style={{
-						width: '15%', alignItems: 'center',
-						padding: 10,
-						borderRightColor: 'grey',
-						borderRightWidth: StyleSheet.hairlineWidth,
-					}}>
-						{item.notes != null && item.notes != '' ? <IconButton
-							icon={state ? "chevron-down" : "chevron-up"}
-							onPress={() => {
-								// TODO: change to array to allow multiple opened at the same time
-								setOpened(state ? null : item._id);
-							}}
-						/> : null}
-					</View>
-					<View style={[styles.allEvents, true ? { width: '65%', backgroundColor: 'lightgrey' } : {}]}>
-						<Text style={{ margin: 5 }}>{item.name}</Text>
-					</View>
-					<View style={{ width: '20%', flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', backgroundColor: 'lightgrey' }}>
-						<IconButton
-							icon='settings'
-							onPress={() => {
-								setExercise(item);
-								setEditDialog(true);
-							}}
+			<Dialog visible={makeDialog} onDismiss={dismiss}>
+				<Dialog.Title>Add Exercise</Dialog.Title>
+				<Dialog.Content>
+					<TextInput
+						label="Name"
+						value={name}
+						disabled={loading}
+						onChangeText={(text) => { setName(text) }}
+						mode="outlined"
+					/>
+					<TextInput
+						label="Notes"
+						mode="outlined"
+						value={notes}
+						disabled={loading}
+						onChangeText={(text) => { setNotes(text) }}
+						multiline={true}
+						numberOfLines={3}
+					/>
+				</Dialog.Content>
+				<Dialog.Actions>
+					<Button
+						loading={loading}
+						onPress={() => {
+							setLoading(true);
 
-						/>
-						<IconButton
-							icon='delete'
-							onPress={() => {
-								setExercise(item);
-								setDeleteDialog(true);
-							}}
-						/>
-					</View>
-				</View>
-				{state && <View>
-					<Text>{item.notes}</Text>
-				</View>}
-			</>
+							// Api request to edit data on server and wait for response
+							ExerciseWorkout.makeExercise(name, notes)
+								.then(ret => {
+									// Make copy of data
+									var dataCopy = data;
+
+									// Add new exercise to data array
+									dataCopy.exercises.push(ret.exercise);
+
+									// Overwrite data and close window
+									setData(dataCopy);
+									dismiss();
+								});
+						}}>Done</Button>
+				</Dialog.Actions>
+			</Dialog>
 		)
 	}
 
-	const ExerciseDialog = () => {
+	const EditExerciseDialog = () => {
 
 		const dismiss = () => setEditDialog(false);
 
@@ -120,7 +124,26 @@ export function Exercises() {
 				</Dialog.Content>
 				<Dialog.Actions>
 					<Button onPress={() => {
+						// Api request to edit data on server
 						ExerciseWorkout.updateExercise(exercise._id, name, notes);
+
+						// Make copy of data and selected exercise
+						var dataCopy = data;
+						var exerciseCopy = exercise;
+
+						// Edit fields
+						exerciseCopy.name = name;
+						exerciseCopy.notes = notes;
+
+						// Find selected exercise in local data and overwrite it
+						for (var i = 0; i < dataCopy.exercises.length; i++) {
+							if (dataCopy.exercises[i]._id === exercise._id) {
+								dataCopy.exercises[i] = exerciseCopy
+							}
+						}
+
+						// Overwrite data and close window
+						setData(dataCopy);
 						dismiss();
 					}}>Done</Button>
 				</Dialog.Actions>
@@ -147,24 +170,17 @@ export function Exercises() {
 				<Dialog.Actions>
 					<Button onPress={() => { dismiss(); }}>No</Button>
 					<Button onPress={() => {
+						// Api request to delete data on server
 						ExerciseWorkout.deleteExercise(exercise._id);
 
-						var obj = listItems.find(obj => {
-							return obj.key === exercise._id;
-						})
+						// Make copy of data
+						var dataCopy = data;
 
-						//console.log(obj);
+						// Find exercise in local data and remove it
+						dataCopy.exercises.splice(dataCopy.exercises.indexOf(exercise), 1);
 
-						listItems.splice(listItems.indexOf(obj), 1);
-
-
-						//console.log(listItems)
-						/*console.log(data.exercises);
-						console.log(data.exercises.indexOf(exercise));
-						var arr = data.exercises;
-						arr.splice(data.exercises.indexOf(exercise), 1);
-						setData([arr])
-						console.log(data.exercises);*/
+						// Overwrite data and close window
+						setData(dataCopy);
 						dismiss();
 					}}>Yes</Button>
 				</Dialog.Actions>
@@ -175,66 +191,66 @@ export function Exercises() {
 
 	function RenderItem(item) {
 		//console.log(item.value);
-		return(
-		<View>
-			<List.Item 
-				title={item.value.name} 
-				description={item.value.notes != null ? item.value.notes : null}
-				right={props => (
-				<View style={{flexDirection:'row'}}>
-					<IconButton {...props} icon="settings" onPress={()=>{
-						setExercise(item.value);
-						setEditDialog(true);
-					}}/>
-					<IconButton {...props} icon="trash-can" onPress={()=>{
-						setExercise(item.value);
-						setDeleteDialog(true);
-					}}/>
-				</View>
-				)}/>
-		</View>
+		return (
+			<View>
+				<List.Item
+					title={item.value.name}
+					description={item.value.notes != null ? item.value.notes : null}
+					right={props => (
+						<View style={{ flexDirection: 'row' }}>
+							<IconButton {...props} icon="settings" onPress={() => {
+								setExercise(item.value);
+								setEditDialog(true);
+							}} />
+							<IconButton {...props} icon="trash-can" onPress={() => {
+								setExercise(item.value);
+								setDeleteDialog(true);
+							}} />
+						</View>
+					)} />
+			</View>
 		);
 	}
 
-	
+
 
 	function RenderList(props) {
-		//var data = props;
-		//console.log(props.data);
-
-
 		listItems = props.data.map((val) => {
 			return (
-				<RenderItem key={val._id} value={val}/>
+				<RenderItem key={val._id} value={val} />
 			)
 		});
-
-		//console.log(listItems);
 
 		return (<View>{listItems}</View>);
 	}
 
 	try {
-		//console.log('----------------------- MAIN LOOP -----------------------')
-		console.log(data.exercises == null);
-		if (data != null)
-		{
-			//console.log('----------------------- RENDER LIST -----------------------')
+		if (data != null) {
 			return (
 				<>
 					<ScrollView>
-						<RenderList data={data.exercises}/>
+						<RenderList data={data.exercises} />
 					</ScrollView>
+					<View style={{ flexDirection: 'row', justifyContent: 'center', margin: 10 }}>
+						<Button
+							style={{ width: '40%' }}
+							mode={"contained"}
+							onPress={() => { setMakeDialog(true) }}
+						>
+							Add Exercise
+						</Button>
+
+					</View>
+
 					<Portal>
-						<ExerciseDialog vis={editDialog} />
+						<MakeExerciseDialog vis={makeDialog} />
+						<EditExerciseDialog vis={editDialog} />
 						<DeleteDialog vis={deleteDialog} />
 					</Portal>
 				</>
 			)
 		}
 		return null;
-
-		
 	}
 	catch {
 		return (
@@ -243,70 +259,6 @@ export function Exercises() {
 	}
 
 }
-//{listItems}
-
-/*<>
-				<Text>Print</Text>
-				<ScrollView>
-					{data.exercises.map((val) => {
-						//console.log(val.name);
-
-						var state = false;
-						return (
-							<View key={val._id}>
-								<View style={styles.day}>
-									<View style={{
-										width: '15%', alignItems: 'center',
-										padding: 10,
-										borderRightColor: 'grey',
-										borderRightWidth: StyleSheet.hairlineWidth,
-									}}>
-										{val.notes != null && val.notes != '' ? <IconButton
-											icon={state ? "chevron-down" : "chevron-up"}
-											onPress={() => {
-												// TODO: change to array to allow multiple opened at the same time
-												//setOpened(state ? null : item._id);
-												console.log('open');
-												state = !state;
-											}}
-										/> : null}
-									</View>
-									<View style={[styles.allEvents, true ? { width: '65%', backgroundColor: 'lightgrey' } : {}]}>
-										<Text style={{ margin: 5 }}>{val.name}</Text>
-									</View>
-									<View style={{ width: '20%', flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', backgroundColor: 'lightgrey' }}>
-										<IconButton
-											icon='settings'
-											onPress={() => {
-												//setExercise(item);
-												//setExerciseDialog(true);
-												console.log('settings');
-											}}
-
-										/>
-										<IconButton
-											icon='delete'
-											onPress={() => {
-												//setExercise(item);
-												//setDeleteDialog(true);
-												console.log('delete');
-											}}
-										/>
-									</View>
-								</View>
-								{state && <View>
-									<Text>{val.notes}</Text>
-								</View>}
-							</View>
-						)
-					})}
-				</ScrollView>
-
-				<Portal>
-					<ExerciseDialog vis={exerciseDialog} />
-					<DeleteDialog vis={deleteDialog} />
-				</Portal>
-			</>*/
 
 
 const styles = StyleSheet.create({

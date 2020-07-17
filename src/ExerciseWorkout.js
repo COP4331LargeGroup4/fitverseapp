@@ -22,11 +22,13 @@ export default class ExerciseWorkoutUtil {
 		return response.data;
 	}
 
-	makeExercise = async (name) => {
+	makeExercise = async (name, notes) => {
 		var token = await Storage.getData('jwt');
 
 		var response = await axios.post(baseAPIURL + "/api/exercise/create", {
 			token: token,
+			name: name,
+			notes: notes
 		}, {
 			headers: {
 				'Access-Control-Allow-Origin': '*',

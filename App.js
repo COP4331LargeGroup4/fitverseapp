@@ -1,14 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { StyleSheet, Text, SafeAreaView, View, Image, Dimensions } from 'react-native';
 import { BottomNavigation, Button, TextInput, HelperText, ActivityIndicator } from 'react-native-paper';
-
-
-//import * as mdiIcon from '@mdi/react' // can i change the iconprovder to this? or add mdiAccountCowboyHat to react-native-icon-provider or whatever its called
-//import { mdiAccountCowboyHat } from '@mdi/js';
 import SafeViewAndroid from "./components/SafeAndroidView";
 import Profile from './src/profile';
 import Logo from './assets/logo.svg'
-import { DashboardCalendar, PageCalendar } from './src/calendar';
+import Calendar from './src/calendar';
 import { Exercises } from './src/exercises';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
@@ -18,16 +14,8 @@ import StorageUtil from './src/Storage';
 
 const Storage = new StorageUtil();
 
-
-const width = Dimensions.get('window').width;
-
-// also used in calendar.js
+// also used in ExerciseWorkout.js
 const baseAPIURL = 'https://fitverse.herokuapp.com';
-
-
-
-
-
 
 //<Image source={require('./assets/logo.png')} style={{ alignContent:'center', resizeMode:'center', width: (width * .8) }} />
 
@@ -39,13 +27,13 @@ const DashboardRoute = () =>
 
 			style={styles.container}
 		/>
-		<DashboardCalendar />
+		<Calendar />
 
 	</View >;
 
 const CalendarRoute = () =>
 	<View >
-		<PageCalendar />
+		<Text>Test</Text>
 	</View >;
 
 const ExercisesRoute = () =>
@@ -57,8 +45,8 @@ const ProfileRoute = () =>
 	<View >
 		<Profile />
 		<Button icon="alert-octagon" mode="contained" onPress={Storage.clearData}>
-				Test
-				</Button>
+			Test
+		</Button>
 	</View >;
 
 const Dashboard = () => {
