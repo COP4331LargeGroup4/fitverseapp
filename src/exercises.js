@@ -1,10 +1,20 @@
 import React, { Component, useState, useEffect, useRef } from 'react';
-import { Text, View, StyleSheet, Alert, FlatList } from 'react-native';
+import { Text, View, StyleSheet, Alert, FlatList, ScrollView } from 'react-native';
 import { Checkbox, IconButton, Button, List, Portal, Dialog, Paragraph, TextInput } from 'react-native-paper';
 
 import ExerciseWorkoutUtil from './ExerciseWorkout';
+import { mixed } from 'yup';
 
 const ExerciseWorkout = new ExerciseWorkoutUtil();
+
+
+
+function ItemTest(item) {
+	const [state, setState] = setState(false);
+
+	return (<Text>Test</Text>);
+}
+
 
 export function Exercises() {
 
@@ -12,11 +22,11 @@ export function Exercises() {
 
 	const [opened, setOpened] = useState();
 
-	const [refresh, setRefresh] = useState(false);
-
-	const [exerciseDialog, setExerciseDialog] = useState(false);
+	const [editDialog, setEditDialog] = useState(false);
 	const [deleteDialog, setDeleteDialog] = useState(false);
 	const [exercise, setExercise] = useState(null);
+
+	var listItems;
 
 	const getData = async () => {
 		var exercises = await ExerciseWorkout.getExercises();
@@ -58,7 +68,7 @@ export function Exercises() {
 							icon='settings'
 							onPress={() => {
 								setExercise(item);
-								setExerciseDialog(true);
+								setEditDialog(true);
 							}}
 
 						/>
@@ -78,9 +88,9 @@ export function Exercises() {
 		)
 	}
 
-	const ExerciseDialog = (input) => {
+	const ExerciseDialog = () => {
 
-		const dismiss = () => setExerciseDialog(false);
+		const dismiss = () => setEditDialog(false);
 
 		if (exercise == null) {
 			return null;
@@ -90,20 +100,20 @@ export function Exercises() {
 		const [notes, setNotes] = useState(exercise.notes);
 
 		return (
-			<Dialog visible={input.vis} onDismiss={dismiss}>
+			<Dialog visible={editDialog} onDismiss={dismiss}>
 				<Dialog.Title>Edit Exercise</Dialog.Title>
 				<Dialog.Content>
 					<TextInput
 						label="Name"
 						value={name}
-						onChangeText={(text) => {setName(text) }}
+						onChangeText={(text) => { setName(text) }}
 						mode="outlined"
 					/>
 					<TextInput
 						label="Notes"
 						mode="outlined"
 						value={notes}
-						onChangeText={(text) => {setNotes(text) }}
+						onChangeText={(text) => { setNotes(text) }}
 						multiline={true}
 						numberOfLines={3}
 					/>
@@ -111,6 +121,7 @@ export function Exercises() {
 				<Dialog.Actions>
 					<Button onPress={() => {
 						ExerciseWorkout.updateExercise(exercise._id, name, notes);
+						this.forceUpdate();
 						dismiss();
 					}}>Done</Button>
 				</Dialog.Actions>
@@ -126,7 +137,7 @@ export function Exercises() {
 			return null;
 		}
 
-		console.log(exercise);
+		//console.log(exercise);
 
 		return (
 			<Dialog visible={input.vis} onDismiss={dismiss}>
@@ -135,15 +146,26 @@ export function Exercises() {
 					<Text>Are you sure?</Text>
 				</Dialog.Content>
 				<Dialog.Actions>
-					<Button onPress={() => {dismiss();}}>No</Button>
+					<Button onPress={() => { dismiss(); }}>No</Button>
 					<Button onPress={() => {
 						ExerciseWorkout.deleteExercise(exercise._id);
-						console.log(data.exercises);
+
+						var obj = listItems.find(obj => {
+							return obj.key === exercise._id;
+						})
+
+						//console.log(obj);
+
+						listItems.splice(listItems.indexOf(obj), 1);
+
+
+						//console.log(listItems)
+						/*console.log(data.exercises);
 						console.log(data.exercises.indexOf(exercise));
 						var arr = data.exercises;
-						arr.splice(data.exercises.indexOf(exercise),1);
+						arr.splice(data.exercises.indexOf(exercise), 1);
 						setData([arr])
-						setRefresh(!refresh);
+						console.log(data.exercises);*/
 						dismiss();
 					}}>Yes</Button>
 				</Dialog.Actions>
@@ -152,29 +174,68 @@ export function Exercises() {
 	}
 
 
+	function RenderItem(item) {
+		//console.log(item.value);
+		return(
+		<View>
+			<List.Item 
+				title={item.value.name} 
+				description={item.value.notes != null ? item.value.notes : null}
+				right={props => (
+				<View style={{flexDirection:'row'}}>
+					<IconButton {...props} icon="settings" onPress={()=>{
+						setExercise(item.value);
+						setEditDialog(true);
+					}}/>
+					<IconButton {...props} icon="trash-can" onPress={()=>{
+						setExercise(item.value);
+						setDeleteDialog(true);
+					}}/>
+				</View>
+				)}/>
+		</View>
+		);
+	}
 
-	// TODO: https://reactnative.dev/docs/optimizing-flatlist-configuration#list-items
-	// flatlist is slow, too much being done within unique items
+	
+
+	function RenderList(props) {
+		//var data = props;
+		//console.log(props.data);
 
 
+		listItems = props.data.map((val) => {
+			return (
+				<RenderItem key={val._id} value={val}/>
+			)
+		});
+
+		//console.log(listItems);
+
+		return (<View>{listItems}</View>);
+	}
 
 	try {
-		return (
-			<>
-				<Text>Print</Text>
-				<FlatList
-					data={data.exercises}
-					renderItem={renderItem}
-					keyExtractor={(item) => item._id}
-					extraData={opened, exercise, exerciseDialog, deleteDialog, refresh}
-					style={{ height: '90%' }}
-				/>
-				<Portal>
-					<ExerciseDialog vis={exerciseDialog}/>
-					<DeleteDialog vis={deleteDialog}/>
-				</Portal>
-			</>
-		)
+		//console.log('----------------------- MAIN LOOP -----------------------')
+		console.log(data.exercises == null);
+		if (data != null)
+		{
+			//console.log('----------------------- RENDER LIST -----------------------')
+			return (
+				<>
+					<ScrollView>
+						<RenderList data={data.exercises}/>
+					</ScrollView>
+					<Portal>
+						<ExerciseDialog vis={editDialog} />
+						<DeleteDialog vis={deleteDialog} />
+					</Portal>
+				</>
+			)
+		}
+		return null;
+
+		
 	}
 	catch {
 		return (
@@ -183,6 +244,70 @@ export function Exercises() {
 	}
 
 }
+//{listItems}
+
+/*<>
+				<Text>Print</Text>
+				<ScrollView>
+					{data.exercises.map((val) => {
+						//console.log(val.name);
+
+						var state = false;
+						return (
+							<View key={val._id}>
+								<View style={styles.day}>
+									<View style={{
+										width: '15%', alignItems: 'center',
+										padding: 10,
+										borderRightColor: 'grey',
+										borderRightWidth: StyleSheet.hairlineWidth,
+									}}>
+										{val.notes != null && val.notes != '' ? <IconButton
+											icon={state ? "chevron-down" : "chevron-up"}
+											onPress={() => {
+												// TODO: change to array to allow multiple opened at the same time
+												//setOpened(state ? null : item._id);
+												console.log('open');
+												state = !state;
+											}}
+										/> : null}
+									</View>
+									<View style={[styles.allEvents, true ? { width: '65%', backgroundColor: 'lightgrey' } : {}]}>
+										<Text style={{ margin: 5 }}>{val.name}</Text>
+									</View>
+									<View style={{ width: '20%', flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', backgroundColor: 'lightgrey' }}>
+										<IconButton
+											icon='settings'
+											onPress={() => {
+												//setExercise(item);
+												//setExerciseDialog(true);
+												console.log('settings');
+											}}
+
+										/>
+										<IconButton
+											icon='delete'
+											onPress={() => {
+												//setExercise(item);
+												//setDeleteDialog(true);
+												console.log('delete');
+											}}
+										/>
+									</View>
+								</View>
+								{state && <View>
+									<Text>{val.notes}</Text>
+								</View>}
+							</View>
+						)
+					})}
+				</ScrollView>
+
+				<Portal>
+					<ExerciseDialog vis={exerciseDialog} />
+					<DeleteDialog vis={deleteDialog} />
+				</Portal>
+			</>*/
 
 
 const styles = StyleSheet.create({
