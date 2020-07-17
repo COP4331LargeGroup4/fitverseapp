@@ -121,7 +121,6 @@ export function Exercises() {
 				<Dialog.Actions>
 					<Button onPress={() => {
 						ExerciseWorkout.updateExercise(exercise._id, name, notes);
-						this.forceUpdate();
 						dismiss();
 					}}>Done</Button>
 				</Dialog.Actions>
