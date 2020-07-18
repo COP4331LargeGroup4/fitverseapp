@@ -80,7 +80,7 @@ export default function Exercises() {
 							ExerciseWorkout.makeExercise(name, notes)
 								.then(ret => {
 									// Make copy of data
-									var dataCopy = data;
+									var dataCopy = [...data];
 
 									// Add new exercise to data array
 									dataCopy.exercises.push(ret.exercise);
@@ -131,7 +131,7 @@ export default function Exercises() {
 						ExerciseWorkout.updateExercise(exercise._id, name, notes);
 
 						// Make copy of data and selected exercise
-						var dataCopy = data;
+						var dataCopy = [...data];
 						var exerciseCopy = exercise;
 
 						// Edit fields
@@ -177,7 +177,7 @@ export default function Exercises() {
 						ExerciseWorkout.deleteExercise(exercise._id);
 
 						// Make copy of data
-						var dataCopy = data;
+						var dataCopy = [...data];
 
 						// Find exercise in local data and remove it
 						dataCopy.exercises.splice(dataCopy.exercises.indexOf(exercise), 1);

@@ -154,7 +154,18 @@ export default function Calendar() {
 
 	function RenderItem(item) {
 
-		const [selected, setSelected] = useState(data[data.indexOf(item.value)].data);
+		var index = data.indexOf(item.value);
+		console.log(index);
+		console.log(data[index]);
+
+		if (index === -1)
+		{
+			console.log(data.length);
+			return <Text>test</Text>;
+		}
+
+
+		const [selected, setSelected] = useState(data[index].data);
 
 		return (
 			<View style={{ flexDirection: 'row', justifyContent: 'space-evenly'}}>
@@ -164,7 +175,7 @@ export default function Calendar() {
 					onValueChange={(value) => {
 						setSelected(value);
 
-						var dataCopy = data;
+						var dataCopy = [...data];
 						var itemCopy = item.value;
 
 						itemCopy.data = value;
@@ -190,11 +201,13 @@ export default function Calendar() {
 					style={{width:'15%'}}
 					onPress={() => {
 						// delete item
-						var dataCopy = data;
+						var dataCopy = [...data];
 
 						dataCopy.splice(data.indexOf(item.value), 1);
 
 						setData(dataCopy);
+
+
 					}}
 				/>
 			</View>
@@ -202,7 +215,7 @@ export default function Calendar() {
 	}
 
 	function RenderList(props) {
-		const listItems = props.data.map((val) => {
+		var listItems = props.data.map((val) => {
 			return (
 				<RenderItem key={val.key} value={val} />
 			)
@@ -307,14 +320,10 @@ export default function Calendar() {
 									icon='plus' 
 									onPress={() => {
 										//addValueToSelected(-1);
-										//setData([...data, {data:-1, key:key}]);
+										var dataCopy = [...data];
 
-										var dataCopy = data;
-
-										// Add new exercise to data array
 										dataCopy.push({data:arr[0], key:key});
 
-										// Overwrite data and close window
 										setData(dataCopy);
 
 										setKey(key + 1);
