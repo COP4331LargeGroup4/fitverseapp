@@ -11,11 +11,10 @@ const ExerciseWorkout = new ExerciseWorkoutUtil();
 export default function Calendar() {
 	const CalRef = useRef(null);
 
-	var dayToAdd = moment().format('YYYY-MM-DD');
-
-	var numDaysInWeek = 7
+	var numDaysInWeek = 7;
 	var startDate = moment().startOf('week');
 	var endDate = moment().add(numDaysInWeek, 'days');
+	const today = moment().format('YYYY-MM-DD');
 
 	const [events, setEvents] = useState();
 
@@ -30,41 +29,6 @@ export default function Calendar() {
 		getEvents();
 	}, []);
 
-	//console.log("TEST");
-
-	try {
-		//console.log(events.workouts[0].weekly);
-
-		//console.log(events.workouts[0].weekly)
-	}
-	catch
-	{
-		console.log('events not mounted yet');
-	}
-
-	var myEventsList = [
-		{
-			title: 'Chest and Triceps',
-			date: '2020-06-29',
-			//startRecur: currentEvent.repeat.length ? '2020-06-23' : '',
-			//endRecur: '',
-			//daysOfWeek: currentEvent.repeat.length ? currentEvent.repeat : ''
-		},
-		{
-			title: 'Chest and Triceps',
-			date: '2020-06-30',
-			//startRecur: currentEvent.repeat.length ? '2020-06-23' : '',
-			//endRecur: '',
-			//daysOfWeek: currentEvent.repeat.length ? currentEvent.repeat : ''
-		},
-		{
-			title: 'Chest and Triceps',
-			date: '2020-07-01',
-			//startRecur: currentEvent.repeat.length ? '2020-06-23' : '',
-			//endRecur: '',
-			//daysOfWeek: currentEvent.repeat.length ? currentEvent.repeat : ''
-		},
-	]
 
 	const [exerciseDialog, setExerciseDialog] = useState(false);
 	const showExercise = () => setExerciseDialog(true);
@@ -77,35 +41,7 @@ export default function Calendar() {
 	const [dialogNotes, setDialogNotes] = useState();
 
 
-	const [selectedDate, setSelectedDate] = useState(moment().format('YYYY-MM-DD'));
-	const [workout, setWorkout] = useState(false);
-	const [markedDates, setMarkedDates] = useState(myEventsList.map(a => a.date));
-
-	const [workoutViews, setWorkoutViews] = useState(undefined);
-
-
-
-	const onDateSelected = (date) => {
-		setSelectedDate(date);
-		//console.log(selectedDate);
-		/*var events = [];
-		eventDate.forEach((event, index) => {
-
-			if (event == moment(selectedDate).format('YYYY-MM-DD'))
-			{
-				events.push(index);
-			}
-		})
-		setEventIDs(events);*/
-	}
-
-	function addEvent() {
-		var event = markedDates;
-		event.push(dayToAdd);
-		dayToAdd = moment(dayToAdd).add(1, 'day').format('YYYY-MM-DD'); // Testing function
-		setMarkedDates(event);
-		CalRef.current.forceUpdate();
-	}
+	const [selectedDate, setSelectedDate] = useState(today);
 
 	const markedDatesFunc = date => {
 
@@ -124,28 +60,14 @@ export default function Calendar() {
 		
 
 		return { dots: dots };
+	}
 
-
-
-
-		/*if (date.isoWeekday() === 4) { // Thursdays
+	const customDateStyleFunc = date => {
+		if (moment(date).format('YYYY-MM-DD') == today) {
 			return {
-				dots: [{
-					color: "#000000",
-					selectedColor: "#333333",
-				}]
-			};
+				dateContainerStyle:  {backgroundColor: "#CCCCCC"},
+			}
 		}
-		// Line
-		if (date.isoWeekday() === 6) { // Saturdays
-			return {
-				lines: [{
-					color: "#000000",
-					selectedColor: "#333333",
-				}]
-			};
-		}
-		return {};*/
 	}
 
 
@@ -232,8 +154,9 @@ export default function Calendar() {
 				startingDate={startDate}
 				useIsoWeekday={false}
 				daySelectionAnimation={{ type: 'border', duration: 0, borderWidth: 1, borderHighlightColor: 'black' }}
-				onDateSelected={onDateSelected}
+				onDateSelected={(date) => {setSelectedDate(date)}}
 				markedDates={markedDatesFunc}
+				customDatesStyles={customDateStyleFunc}
 				selectedDate={selectedDate}
 			/>
 			<ScrollView style={styles.scrollView}>

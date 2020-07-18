@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { StyleSheet, Text, SafeAreaView, View, Image, Dimensions } from 'react-native';
 import { BottomNavigation, Button, TextInput, HelperText, ActivityIndicator } from 'react-native-paper';
-import SafeViewAndroid from "./components/SafeAndroidView";
+import SafeViewAndroid from "./src/SafeAndroidView";
 import Profile from './src/profile';
 import Logo from './assets/logo.svg'
 import Calendar from './src/calendar';
-import { Exercises } from './src/exercises';
+import Exercises from './src/exercises';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import axios from 'axios';
@@ -20,7 +20,7 @@ const baseAPIURL = 'https://fitverse.herokuapp.com';
 //<Image source={require('./assets/logo.png')} style={{ alignContent:'center', resizeMode:'center', width: (width * .8) }} />
 
 const DashboardRoute = () =>
-	<View style={{height:'100%'}}>
+	<View style={styles.container}>
 		<Logo
 			width='100%'
 			height='10%'
@@ -32,12 +32,12 @@ const DashboardRoute = () =>
 	</View >;
 
 const CalendarRoute = () =>
-	<View >
+	<View style={styles.container}>
 		<Text>Test</Text>
 	</View >;
 
 const ExercisesRoute = () =>
-	<View >
+	<View style={styles.container}>
 		<Exercises />
 	</View >;
 

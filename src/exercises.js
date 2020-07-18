@@ -1,5 +1,5 @@
 import React, { Component, useState, useEffect, useRef } from 'react';
-import { Text, View, StyleSheet, Alert, FlatList, ScrollView } from 'react-native';
+import { Text, View, StyleSheet, Alert, FlatList, ScrollView, RefreshControl } from 'react-native';
 import { Checkbox, IconButton, Button, List, Portal, Dialog, Paragraph, TextInput } from 'react-native-paper';
 
 import ExerciseWorkoutUtil from './ExerciseWorkout';
@@ -7,16 +7,7 @@ import { mixed } from 'yup';
 
 const ExerciseWorkout = new ExerciseWorkoutUtil();
 
-
-
-function ItemTest(item) {
-	const [state, setState] = setState(false);
-
-	return (<Text>Test</Text>);
-}
-
-
-export function Exercises() {
+export default function Exercises() {
 
 	const [data, setData] = useState();
 
@@ -25,11 +16,23 @@ export function Exercises() {
 	const [deleteDialog, setDeleteDialog] = useState(false);
 	const [exercise, setExercise] = useState(null);
 
+	const [refreshing, setRefreshing] = useState(false);
+
 	var listItems;
 
 	const getData = async () => {
 		var exercises = await ExerciseWorkout.getExercises();
 		setData(exercises);
+	}
+
+	const refreshData = () => {
+		setRefreshing(true);
+		ExerciseWorkout.getExercises()
+			.then((data) => {
+				setData(data);
+				setRefreshing(false);
+			});
+
 	}
 
 	useEffect(() => {
@@ -212,8 +215,6 @@ export function Exercises() {
 		);
 	}
 
-
-
 	function RenderList(props) {
 		listItems = props.data.map((val) => {
 			return (
@@ -228,7 +229,12 @@ export function Exercises() {
 		if (data != null) {
 			return (
 				<>
-					<ScrollView>
+					<ScrollView
+						style={styles.scrollView}
+						refreshControl={
+							<RefreshControl refreshing={refreshing} onRefresh={refreshData} />
+						}
+					>
 						<RenderList data={data.exercises} />
 					</ScrollView>
 					<View style={{ flexDirection: 'row', justifyContent: 'center', margin: 10 }}>
@@ -250,7 +256,9 @@ export function Exercises() {
 				</>
 			)
 		}
-		return null;
+		return (
+			<Text>No exercises, why dont you make some?</Text>
+		);
 	}
 	catch {
 		return (
