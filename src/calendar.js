@@ -3,6 +3,7 @@ import { Text, View, StyleSheet, Picker, ScrollView } from 'react-native';
 import { Checkbox, IconButton, Button, List, Portal, Dialog, TextInput, Title } from 'react-native-paper';
 import CalendarStrip from 'react-native-calendar-strip';
 import moment from 'moment';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 import ExerciseWorkoutUtil from './ExerciseWorkout';
 
@@ -10,6 +11,9 @@ const ExerciseWorkout = new ExerciseWorkoutUtil();
 
 export default function Calendar() {
 	const CalRef = useRef(null);
+
+	const StartDateRef = useRef(null);
+	const EndDateRef = useRef(null);
 
 	var numDaysInWeek = 7;
 	var startDate = moment().startOf('week');
@@ -57,7 +61,7 @@ export default function Calendar() {
 		catch {
 			console.log('not loaded');
 		}
-		
+
 
 		return { dots: dots };
 	}
@@ -65,7 +69,7 @@ export default function Calendar() {
 	const customDateStyleFunc = date => {
 		if (moment(date).format('YYYY-MM-DD') == today) {
 			return {
-				dateContainerStyle:  {backgroundColor: "#CCCCCC"},
+				dateContainerStyle: { backgroundColor: "#CCCCCC" },
 			}
 		}
 	}
@@ -139,8 +143,37 @@ export default function Calendar() {
 			)
 		}
 
-
 	}
+
+
+	const [date, setDate] = useState(new Date());
+	const [mode, setMode] = useState('date');
+	const [show, setShow] = useState(false);
+	
+	const onChange = (event, selectedDate) => {
+		
+		if (event.type == 'set' || event.type == 'dismissed') {
+			StartDateRef.current.blur();
+		}
+
+		const currentDate = selectedDate || date;
+		setShow(Platform.OS === 'ios');
+		setDate(currentDate);
+	};
+	
+	const showMode = currentMode => {
+		setShow(true);
+		setMode(currentMode);
+	};
+	
+	const showDatepicker = () => {
+		showMode('date');
+	};
+	
+	const showTimepicker = () => {
+		showMode('time');
+	};
+
 
 	const [addWorkoutState, setAddWorkoutState] = useState('info');
 	const [workoutExercises, setWorkoutExercises] = useState([]);
@@ -150,28 +183,19 @@ export default function Calendar() {
 	const [key, setKey] = useState(0);
 
 
-	const arr = ['1','2','3','4','5','6','7','8'];
+	const arr = ['1', '2', '3', '4', '5', '6', '7', '8'];
 
 	function RenderItem(item) {
 
 		var index = data.indexOf(item.value);
-		console.log(index);
-		console.log(data[index]);
-
-		if (index === -1)
-		{
-			console.log(data.length);
-			return <Text>test</Text>;
-		}
-
 
 		const [selected, setSelected] = useState(data[index].data);
 
 		return (
-			<View style={{ flexDirection: 'row', justifyContent: 'space-evenly'}}>
-				<Picker 
-					selectedValue={selected} 
-					style={{width:'85%'}}
+			<View style={{ flexDirection: 'row', justifyContent: 'space-evenly' }}>
+				<Picker
+					selectedValue={selected}
+					style={{ width: '85%' }}
 					onValueChange={(value) => {
 						setSelected(value);
 
@@ -179,7 +203,7 @@ export default function Calendar() {
 						var itemCopy = item.value;
 
 						itemCopy.data = value;
-						
+
 						for (var i = 0; i < dataCopy.length; i++) {
 							if (dataCopy[i].key === itemCopy.key) {
 								dataCopy[i] = itemCopy
@@ -189,7 +213,7 @@ export default function Calendar() {
 						setData(dataCopy);
 					}}
 				>
-					{ arr.map((val, index) => {
+					{arr.map((val, index) => {
 						return (
 							<Picker.Item key={index} label={val.toString()} value={val.toString()} />
 						)
@@ -197,8 +221,8 @@ export default function Calendar() {
 
 				</Picker>
 				<IconButton
-					icon="trash-can" 
-					style={{width:'15%'}}
+					icon="trash-can"
+					style={{ width: '15%' }}
 					onPress={() => {
 						// delete item
 						var dataCopy = [...data];
@@ -234,7 +258,7 @@ export default function Calendar() {
 				startingDate={startDate}
 				useIsoWeekday={false}
 				daySelectionAnimation={{ type: 'border', duration: 0, borderWidth: 1, borderHighlightColor: 'black' }}
-				onDateSelected={(date) => {setSelectedDate(date)}}
+				onDateSelected={(date) => { setSelectedDate(date) }}
 				markedDates={markedDatesFunc}
 				customDatesStyles={customDateStyleFunc}
 				selectedDate={selectedDate}
@@ -267,19 +291,19 @@ export default function Calendar() {
 							label="Exercise Name"
 							mode="outlined"
 							value={dialogName}
-							onChangeText={(text) =>{setDialogName(text)}}
+							onChangeText={(text) => { setDialogName(text) }}
 						/>
 						<TextInput
 							label="Notes"
 							mode="outlined"
 							value={dialogNotes}
-							onChangeText={(text) =>{setDialogNotes(text)}}
+							onChangeText={(text) => { setDialogNotes(text) }}
 							multiline={true}
 							numberOfLines={3}
 						/>
 					</Dialog.Content>
 					<Dialog.Actions>
-						<Button onPress={()=> {
+						<Button onPress={() => {
 							ExerciseWorkout.makeExercise(dialogName, dialogNotes);
 							hideExercise();
 						}}>Done</Button>
@@ -289,61 +313,82 @@ export default function Calendar() {
 					<Dialog.Title>Add Workout</Dialog.Title>
 					<Dialog.Content>
 						<View style={{ flexDirection: 'row', justifyContent: 'space-evenly', marginTop: 10 }}>
-							<Button 
+							<Button
 								mode={addWorkoutState === 'info' ? 'contained' : 'outlined'}
-								onPress={() => {setAddWorkoutState('info')}}
+								onPress={() => { setAddWorkoutState('info') }}
 							>
 								Workout Info
 							</Button>
-							<Button 
+							<Button
 								mode={addWorkoutState === 'exercises' ? 'contained' : 'outlined'}
-								onPress={() => {setAddWorkoutState('exercises')}}
+								onPress={() => { setAddWorkoutState('exercises') }}
 							>
 								Exercises
 							</Button>
 						</View>
 						{addWorkoutState === 'info' ? <>
-						<TextInput
-							label="Workout Name test"
-							mode="outlined"
-						/>
-						<TextInput
-							label="Notes"
-							mode="outlined"
-							multiline={true}
-							numberOfLines={3}
-						/> 
+							<TextInput
+								label="Workout Name test"
+								mode="outlined"
+							/>
+							<TextInput
+								label="Notes"
+								mode="outlined"
+								multiline={true}
+								numberOfLines={3}
+							/>
+
+							<TextInput
+								ref={StartDateRef}
+
+								label='date'
+								mode="outlined"
+
+								caretHidden
+								onFocus={showDatepicker}
+								onBlur={() => setShow(false)}
+								value={'📅 ' + date.toDateString()}
+								showSoftInputOnFocus={false}
+							/>
+
+							{show && (
+								<DateTimePicker
+									testID="dateTimePicker"
+									value={date}
+									mode={mode}
+									is24Hour={true}
+									display="default"
+									onChange={onChange}
+								/>
+							)}
+							
+
 						</> : <>
-							<View style={{ flexDirection: 'row', justifyContent:'space-between'}}>
-								<Title style={{height:'100%', justifyContent:'center'}}>Text</Title>
-								<IconButton 
-									icon='plus' 
+							<View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+								<Title style={{ height: '100%', justifyContent: 'center' }}>Text</Title>
+								<IconButton
+									icon='plus'
 									onPress={() => {
-										//addValueToSelected(-1);
 										var dataCopy = [...data];
-
-										dataCopy.push({data:arr[0], key:key});
-
+										dataCopy.push({ data: arr[0], key: key });
 										setData(dataCopy);
-
 										setKey(key + 1);
-									}}
+								}}
 								/>
 							</View>
-							<ScrollView style={{height:200}}>
-								<RenderList data={data}/>
+							<ScrollView style={{ height: 200 }}>
+								<RenderList data={data} />
 							</ScrollView>
-
-		
 						</>}
 					</Dialog.Content>
 					<Dialog.Actions>
 						<Button onPress={() => {
-							hideWorkout();
-
-							console.log(data);
 							setData([]);
 							setKey(0);
+
+
+
+							hideWorkout();
 						}}>Done</Button>
 					</Dialog.Actions>
 				</Dialog>
