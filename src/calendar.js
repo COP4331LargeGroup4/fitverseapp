@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Text, View, StyleSheet, Alert, ScrollView } from 'react-native';
-import { Checkbox, IconButton, Button, List, Portal, Dialog, TextInput } from 'react-native-paper';
+import { Text, View, StyleSheet, Picker, ScrollView } from 'react-native';
+import { Checkbox, IconButton, Button, List, Portal, Dialog, TextInput, Title } from 'react-native-paper';
 import CalendarStrip from 'react-native-calendar-strip';
 import moment from 'moment';
 
@@ -123,7 +123,7 @@ export default function Calendar() {
 			})
 
 
-			console.log(workoutList.length)
+			//console.log(workoutList.length)
 
 			if (workoutList.length == 0) {
 				return (<Text>No workouts</Text>);
@@ -142,7 +142,74 @@ export default function Calendar() {
 
 	}
 
+	const [addWorkoutState, setAddWorkoutState] = useState('info');
+	const [workoutExercises, setWorkoutExercises] = useState([]);
 
+
+	const [data, setData] = useState([]);
+	const [key, setKey] = useState(0);
+
+
+	const arr = ['1','2','3','4','5','6','7','8'];
+
+	function RenderItem(item) {
+
+		const [selected, setSelected] = useState(data[data.indexOf(item.value)].data);
+
+		return (
+			<View style={{ flexDirection: 'row', justifyContent: 'space-evenly'}}>
+				<Picker 
+					selectedValue={selected} 
+					style={{width:'85%'}}
+					onValueChange={(value) => {
+						setSelected(value);
+
+						var dataCopy = data;
+						var itemCopy = item.value;
+
+						itemCopy.data = value;
+						
+						for (var i = 0; i < dataCopy.length; i++) {
+							if (dataCopy[i].key === itemCopy.key) {
+								dataCopy[i] = itemCopy
+							}
+						}
+
+						setData(dataCopy);
+					}}
+				>
+					{ arr.map((val, index) => {
+						return (
+							<Picker.Item key={index} label={val.toString()} value={val.toString()} />
+						)
+					})}
+
+				</Picker>
+				<IconButton
+					icon="trash-can" 
+					style={{width:'15%'}}
+					onPress={() => {
+						// delete item
+						var dataCopy = data;
+
+						dataCopy.splice(data.indexOf(item.value), 1);
+
+						setData(dataCopy);
+					}}
+				/>
+			</View>
+		);
+	}
+
+	function RenderList(props) {
+		const listItems = props.data.map((val) => {
+			return (
+				<RenderItem key={val.key} value={val} />
+			)
+		});
+
+		return (<View>{props.data.length === 0 ? <Text>Add some exercises to your workout!</Text> : listItems}</View>);
+	}
 
 	return (
 		<View style={styles.container}>
@@ -160,7 +227,6 @@ export default function Calendar() {
 				selectedDate={selectedDate}
 			/>
 			<ScrollView style={styles.scrollView}>
-
 				<WorkoutAcordian />
 			</ScrollView>
 			<View style={{ flexDirection: 'row', justifyContent: 'space-evenly', margin: 10 }}>
@@ -209,8 +275,23 @@ export default function Calendar() {
 				<Dialog visible={workoutDialog} onDismiss={hideWorkout}>
 					<Dialog.Title>Add Workout</Dialog.Title>
 					<Dialog.Content>
+						<View style={{ flexDirection: 'row', justifyContent: 'space-evenly', marginTop: 10 }}>
+							<Button 
+								mode={addWorkoutState === 'info' ? 'contained' : 'outlined'}
+								onPress={() => {setAddWorkoutState('info')}}
+							>
+								Workout Info
+							</Button>
+							<Button 
+								mode={addWorkoutState === 'exercises' ? 'contained' : 'outlined'}
+								onPress={() => {setAddWorkoutState('exercises')}}
+							>
+								Exercises
+							</Button>
+						</View>
+						{addWorkoutState === 'info' ? <>
 						<TextInput
-							label="Workout Name"
+							label="Workout Name test"
 							mode="outlined"
 						/>
 						<TextInput
@@ -218,20 +299,49 @@ export default function Calendar() {
 							mode="outlined"
 							multiline={true}
 							numberOfLines={3}
-						/>
+						/> 
+						</> : <>
+							<View style={{ flexDirection: 'row', justifyContent:'space-between'}}>
+								<Title style={{height:'100%', justifyContent:'center'}}>Text</Title>
+								<IconButton 
+									icon='plus' 
+									onPress={() => {
+										//addValueToSelected(-1);
+										//setData([...data, {data:-1, key:key}]);
+
+										var dataCopy = data;
+
+										// Add new exercise to data array
+										dataCopy.push({data:arr[0], key:key});
+
+										// Overwrite data and close window
+										setData(dataCopy);
+
+										setKey(key + 1);
+									}}
+								/>
+							</View>
+							<ScrollView style={{height:200}}>
+								<RenderList data={data}/>
+							</ScrollView>
+
+		
+						</>}
 					</Dialog.Content>
 					<Dialog.Actions>
-						<Button onPress={hideWorkout}>Done</Button>
+						<Button onPress={() => {
+							hideWorkout();
+
+							console.log(data);
+							setData([]);
+							setKey(0);
+						}}>Done</Button>
 					</Dialog.Actions>
 				</Dialog>
 			</Portal>
 		</View>
 	)
 }
-
-
-
-
 
 
 
