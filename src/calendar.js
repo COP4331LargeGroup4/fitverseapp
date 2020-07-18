@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Text, View, StyleSheet, Picker, ScrollView } from 'react-native';
-import { Checkbox, IconButton, Button, List, Portal, Dialog, TextInput, Title } from 'react-native-paper';
+import { Checkbox, IconButton, Button, List, Portal, Dialog, TextInput, Title, Switch } from 'react-native-paper';
 import CalendarStrip from 'react-native-calendar-strip';
 import moment from 'moment';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -145,8 +145,10 @@ export default function Calendar() {
 
 	}
 
-
-	const [date, setDate] = useState(new Date());
+	const [repeatWeekly, setRepeatWeekly] = useState(true);
+	const [settingDate, setSettingDate] = useState('start');
+	const [workoutStartDate, setWorkoutStartDate] = useState(new Date());
+	const [workoutEndDate, setWorkoutEndDate] = useState(new Date());
 	const [mode, setMode] = useState('date');
 	const [show, setShow] = useState(false);
 	
@@ -156,9 +158,16 @@ export default function Calendar() {
 			StartDateRef.current.blur();
 		}
 
-		const currentDate = selectedDate || date;
+		const currentDate = selectedDate || (settingDate == 'start' ? workoutStartDate : workoutEndDate);
 		setShow(Platform.OS === 'ios');
-		setDate(currentDate);
+
+		if (settingDate == 'start'){
+			setWorkoutStartDate(currentDate);
+		}
+		else if (settingDate == 'end') {
+			setWorkoutEndDate(currentDate);
+		}
+		
 	};
 	
 	const showMode = currentMode => {
@@ -173,7 +182,6 @@ export default function Calendar() {
 	const showTimepicker = () => {
 		showMode('time');
 	};
-
 
 	const [addWorkoutState, setAddWorkoutState] = useState('info');
 	const [workoutExercises, setWorkoutExercises] = useState([]);
@@ -328,33 +336,57 @@ export default function Calendar() {
 						</View>
 						{addWorkoutState === 'info' ? <>
 							<TextInput
-								label="Workout Name test"
+								label="Workout Name"
 								mode="outlined"
 							/>
-							<TextInput
-								label="Notes"
-								mode="outlined"
-								multiline={true}
-								numberOfLines={3}
-							/>
+							<View style={{ flexDirection: 'row', justifyContent:'space-between'}}>
+								<TextInput
+									ref={StartDateRef}
 
-							<TextInput
-								ref={StartDateRef}
+									label={repeatWeekly ? 'Start Date' : 'Date'}
+									mode="outlined"
 
-								label='date'
-								mode="outlined"
+									caretHidden
+									onFocus={() => {
+										setSettingDate('start');
+										showDatepicker();
 
-								caretHidden
-								onFocus={showDatepicker}
-								onBlur={() => setShow(false)}
-								value={'📅 ' + date.toDateString()}
-								showSoftInputOnFocus={false}
-							/>
+									}}
+									onBlur={() => {setShow(false)}}
+									value={'📅 ' + workoutStartDate.toDateString()}
+									showSoftInputOnFocus={false}
+								/>
+
+								{repeatWeekly && <TextInput
+									ref={EndDateRef}
+
+									label='End Date'
+									mode="outlined"
+
+									caretHidden
+									onFocus={() => {
+										setSettingDate('end');
+										showDatepicker();
+									}}
+									onBlur={() => {setShow(false)}}
+									value={'📅 ' + workoutEndDate.toDateString()}
+									showSoftInputOnFocus={false}
+								/>}
+
+							</View>
+
+							<View style={{ flexDirection: 'row', justifyContent: 'space-between'}}>
+								<Text>Repeat Weekly?</Text>
+								<Switch value={repeatWeekly} onValueChange={() => {
+									setRepeatWeekly(!repeatWeekly);
+								}} />
+							</View>
+							
 
 							{show && (
 								<DateTimePicker
 									testID="dateTimePicker"
-									value={date}
+									value={settingDate == 'start' ? workoutStartDate : workoutEndDate}
 									mode={mode}
 									is24Hour={true}
 									display="default"
