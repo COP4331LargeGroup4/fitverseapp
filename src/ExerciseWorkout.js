@@ -94,4 +94,24 @@ export default class ExerciseWorkoutUtil {
 
 		return response.data;
 	}
+
+	makeWorkout = async (name, exercises, weekly, startDate, endDate ) => {
+		var token = await Storage.getData('jwt');
+
+		var response = await axios.post(baseAPIURL + "/api/workout/create", {
+			token: token,
+			name: name,
+			exercises: exercises,
+			weekly: weekly,
+			startDate: startDate,
+			endDate: endDate
+		}, {
+			headers: {
+				'Access-Control-Allow-Origin': '*',
+			},
+			mode: 'cors'
+		})
+
+		return response.data;
+	}
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Text, View, StyleSheet, Picker, ScrollView } from 'react-native';
-import { Checkbox, IconButton, Button, List, Portal, Dialog, TextInput, Title, Switch } from 'react-native-paper';
+import { Checkbox, IconButton, Button, List, Portal, Dialog, TextInput, Title, Switch, ToggleButton } from 'react-native-paper';
 import CalendarStrip from 'react-native-calendar-strip';
 import moment from 'moment';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -149,36 +149,42 @@ export default function Calendar() {
 	const [settingDate, setSettingDate] = useState('start');
 	const [workoutStartDate, setWorkoutStartDate] = useState(new Date());
 	const [workoutEndDate, setWorkoutEndDate] = useState(new Date());
+	const [repeatingDays, setRepeatingDays] = useState([false, false, false, false, false, false, false]);
 	const [mode, setMode] = useState('date');
 	const [show, setShow] = useState(false);
-	
+
 	const onChange = (event, selectedDate) => {
-		
+
 		if (event.type == 'set' || event.type == 'dismissed') {
-			StartDateRef.current.blur();
+			if (settingDate == 'start') {
+				StartDateRef.current.blur();
+			}
+			else if (settingDate == 'end') {
+				EndDateRef.current.blur();
+			}
 		}
 
 		const currentDate = selectedDate || (settingDate == 'start' ? workoutStartDate : workoutEndDate);
 		setShow(Platform.OS === 'ios');
 
-		if (settingDate == 'start'){
+		if (settingDate == 'start') {
 			setWorkoutStartDate(currentDate);
 		}
 		else if (settingDate == 'end') {
 			setWorkoutEndDate(currentDate);
 		}
-		
+
 	};
-	
+
 	const showMode = currentMode => {
 		setShow(true);
 		setMode(currentMode);
 	};
-	
+
 	const showDatepicker = () => {
 		showMode('date');
 	};
-	
+
 	const showTimepicker = () => {
 		showMode('time');
 	};
@@ -186,18 +192,35 @@ export default function Calendar() {
 	const [addWorkoutState, setAddWorkoutState] = useState('info');
 	const [workoutExercises, setWorkoutExercises] = useState([]);
 
+	const [workoutName, setWorkoutName] = useState('');
 
 	const [data, setData] = useState([]);
 	const [key, setKey] = useState(0);
 
+	const [exercises, setExercises] = useState();
 
-	const arr = ['1', '2', '3', '4', '5', '6', '7', '8'];
+	const getExercises = async () => {
+		var ex = await ExerciseWorkout.getExercises();
+		setExercises(ex);
+	}
+
+	/*const refreshData = () => {
+		setRefreshing(true);
+		ExerciseWorkout.getExercises()
+			.then((data) => {
+				setData(data);
+				setRefreshing(false);
+			});
+
+	}*/
+
+	useEffect(() => {
+		getExercises();
+	}, []);
 
 	function RenderItem(item) {
 
-		var index = data.indexOf(item.value);
-
-		const [selected, setSelected] = useState(data[index].data);
+		const [selected, setSelected] = useState(data[data.indexOf(item.value)].data);
 
 		return (
 			<View style={{ flexDirection: 'row', justifyContent: 'space-evenly' }}>
@@ -221,9 +244,9 @@ export default function Calendar() {
 						setData(dataCopy);
 					}}
 				>
-					{arr.map((val, index) => {
+					{exercises.exercises.map((val) => {
 						return (
-							<Picker.Item key={index} label={val.toString()} value={val.toString()} />
+							<Picker.Item key={val._id} label={val.name} value={val._id} />
 						)
 					})}
 
@@ -338,13 +361,16 @@ export default function Calendar() {
 							<TextInput
 								label="Workout Name"
 								mode="outlined"
+								value={workoutName}
+								onChangeText={(text) => {setWorkoutName(text)}}
 							/>
-							<View style={{ flexDirection: 'row', justifyContent:'space-between'}}>
+							<View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
 								<TextInput
 									ref={StartDateRef}
 
 									label={repeatWeekly ? 'Start Date' : 'Date'}
 									mode="outlined"
+									style={!repeatWeekly ? { width: '100%' } : { width: '49%' }}
 
 									caretHidden
 									onFocus={() => {
@@ -352,7 +378,7 @@ export default function Calendar() {
 										showDatepicker();
 
 									}}
-									onBlur={() => {setShow(false)}}
+									onBlur={() => { setShow(false) }}
 									value={'📅 ' + workoutStartDate.toDateString()}
 									showSoftInputOnFocus={false}
 								/>
@@ -362,26 +388,27 @@ export default function Calendar() {
 
 									label='End Date'
 									mode="outlined"
+									style={{ width: '49%' }}
 
 									caretHidden
 									onFocus={() => {
 										setSettingDate('end');
 										showDatepicker();
 									}}
-									onBlur={() => {setShow(false)}}
+									onBlur={() => { setShow(false) }}
 									value={'📅 ' + workoutEndDate.toDateString()}
 									showSoftInputOnFocus={false}
 								/>}
 
 							</View>
 
-							<View style={{ flexDirection: 'row', justifyContent: 'space-between'}}>
+							<View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
 								<Text>Repeat Weekly?</Text>
 								<Switch value={repeatWeekly} onValueChange={() => {
 									setRepeatWeekly(!repeatWeekly);
 								}} />
 							</View>
-							
+
 
 							{show && (
 								<DateTimePicker
@@ -393,34 +420,81 @@ export default function Calendar() {
 									onChange={onChange}
 								/>
 							)}
-							
+
+							{repeatWeekly && (<View style={{ flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'stretch' }}>
+								{['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((value, index) => {
+									return (
+										<Button
+											style={{ width: '12%' }}
+											key={index}
+											compact={true}
+											mode={repeatingDays[index] ? 'contained' : 'text'}
+											onPress={() => {
+												var dataCopy = [...repeatingDays];
+												dataCopy[index] = !dataCopy[index];
+												setRepeatingDays(dataCopy);
+											}}
+										>
+											{value}
+										</Button>
+									)
+								})}
+							</View>
+							)}
+
 
 						</> : <>
-							<View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-								<Title style={{ height: '100%', justifyContent: 'center' }}>Text</Title>
-								<IconButton
-									icon='plus'
-									onPress={() => {
-										var dataCopy = [...data];
-										dataCopy.push({ data: arr[0], key: key });
-										setData(dataCopy);
-										setKey(key + 1);
-								}}
-								/>
-							</View>
-							<ScrollView style={{ height: 200 }}>
-								<RenderList data={data} />
-							</ScrollView>
-						</>}
+								<View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+									<Title style={{ height: '100%', justifyContent: 'center' }}>Text</Title>
+									<IconButton
+										icon='plus'
+										onPress={() => {
+											var dataCopy = [...data];
+											dataCopy.push({ data: exercises.exercises[0]._id, key: key });
+											setData(dataCopy);
+											setKey(key + 1);
+										}}
+									/>
+								</View>
+								<ScrollView style={{ height: 200 }}>
+									<RenderList data={data} />
+								</ScrollView>
+							</>}
 					</Dialog.Content>
 					<Dialog.Actions>
 						<Button onPress={() => {
-							setData([]);
-							setKey(0);
+							console.log('------------------');
+							console.log(workoutName);
+							console.log(data.map(value => value.data));
+							console.log(repeatWeekly ? repeatingDays.map((val, index) => {if (val) return index}).filter((val) => val != undefined) : []); // convert array of booleans to array 
+							console.log(workoutStartDate);
+							console.log(repeatWeekly ? endDate : null);
+
+							ExerciseWorkout.makeWorkout(
+								workoutName, 
+								data.map(value => value.data),
+								repeatWeekly ? repeatingDays.map((val, index) => {if (val) return index}).filter((val) => val != undefined) : [],
+								workoutStartDate,
+								repeatWeekly ? endDate : null
+							).then(() => {
+								setWorkoutName('');
+								setData([]);
+								setKey(0);
+
+								setRepeatWeekly(true);
+								setRepeatingDays([false, false, false, false, false, false, false]);
+								setWorkoutStartDate(new Date());
+								setWorkoutEndDate(new Date());
 
 
+								hideWorkout();
+							});
 
-							hideWorkout();
+							
+							
+							
+							
+							
 						}}>Done</Button>
 					</Dialog.Actions>
 				</Dialog>
