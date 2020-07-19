@@ -78,13 +78,11 @@ export default class ExerciseWorkoutUtil {
 
 
 
-	getWorkouts = async (startDate, endDate) => {
+	getWorkouts = async () => {
 		var token = await Storage.getData('jwt');
 
-		var response = await axios.post(baseAPIURL + "/api/workout/readAllDateRange", {
-			token: token,
-			startDate: startDate,
-			endDate: endDate
+		var response = await axios.post(baseAPIURL + "/api/workout/readAll", {
+			token: token
 		}, {
 			headers: {
 				'Access-Control-Allow-Origin': '*',
@@ -111,6 +109,60 @@ export default class ExerciseWorkoutUtil {
 			},
 			mode: 'cors'
 		})
+
+		return response.data;
+	}
+
+
+	getExercisesDone = async (workout, date) => {
+		var token = await Storage.getData('jwt');
+
+		var response = await axios.post(baseAPIURL + "/api/workout/getDoneExercises", {
+			token: token,
+			workout: workout,
+			date: date
+		}, {
+			headers: {
+				'Access-Control-Allow-Origin': '*',
+			},
+			mode: 'cors'
+		})
+
+		return response.data;
+	}
+
+	markExercisesDone = async (workout, date, exercise) => {
+		var token = await Storage.getData('jwt');
+
+		var response = await axios.post(baseAPIURL + "/api/workout/markExercisesDone", {
+			token: token,
+			workout: workout,
+			date: date,
+			addDoneExercises: [exercise]
+		}, {
+			headers: {
+				'Access-Control-Allow-Origin': '*',
+			},
+			mode: 'cors'
+		}).then(console.log('marked done'))
+
+		return response.data;
+	}
+
+	unmarkExercisesDone = async (workout, date, exercise) => {
+		var token = await Storage.getData('jwt');
+
+		var response = await axios.post(baseAPIURL + "/api/workout/markExercisesDone", {
+			token: token,
+			workout: workout,
+			date: date,
+			removeDoneExercises: [exercise]
+		}, {
+			headers: {
+				'Access-Control-Allow-Origin': '*',
+			},
+			mode: 'cors'
+		}).then(console.log('marked undone'))
 
 		return response.data;
 	}

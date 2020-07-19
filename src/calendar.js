@@ -6,6 +6,7 @@ import moment from 'moment';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 import ExerciseWorkoutUtil from './ExerciseWorkout';
+import { object } from 'yup';
 
 const ExerciseWorkout = new ExerciseWorkoutUtil();
 
@@ -23,7 +24,7 @@ export default function Calendar() {
 	const [events, setEvents] = useState();
 
 	const getEvents = async () => {
-		var workouts = await ExerciseWorkout.getWorkouts(startDate, endDate);
+		var workouts = await ExerciseWorkout.getWorkouts();
 
 		//console.log(workouts);
 		setEvents(workouts);
@@ -74,60 +75,106 @@ export default function Calendar() {
 		}
 	}
 
+	var exercisesStatus = {};
+
+	function RenderItemExercise(item) {
+
+		
+
+		console.log(exercisesStatus);
+		console.log(exercisesStatus[item.value._id]);
+
+		if (exercisesStatus[item.value._id] != true) {
+			exercisesStatus[item.value._id] = false;
+			console.log('dne')
+		}
+
+		const [status, setStatus] = useState(exercisesStatus[item.value._id]);
+
+		
+
+		return (
+			<List.Item
+				title={item.value.name}
+				left={props => (
+					<Checkbox {...props}
+						status={status ? 'checked' : 'unchecked'}
+						onPress={() => {
+							if (status) {
+								ExerciseWorkout.unmarkExercisesDone(item.workoutId, selectedDate, item.value._id);
+								exercisesStatus[item.value._id] = false;
+								setStatus(false);
+							}
+							else {
+								ExerciseWorkout.markExercisesDone(item.workoutId, selectedDate, item.value._id);
+								exercisesStatus[item.value._id] = true;
+								setStatus(true);
+							}
+							console.log(exercisesStatus[item.value._id]);
+							
+						}}
+					/>
+				)}
+			/>
+		)
+	}
+
+	function RenderItemWorkoutAccordian(item) {
+
+		const [status, setStatus] = useState(true);
+
+
+		console.log(item.value._id);
+		console.log(selectedDate);
+		console.log('1------');
+		ExerciseWorkout.getExercisesDone(item.value._id, selectedDate)
+		.then(data => {
+			console.log(data);
+			data.doneExercises.forEach(key => {
+				console.log(key);
+				exercisesStatus[key] = true;
+				console.log(exercisesStatus);
+			})
+		});
+		console.log('2------');
+
+		return (
+			<List.Accordion
+				title={item.value.name}
+				expanded={status}
+				onPress={() => { setStatus(!status) }}
+			>
+				{item.value.exercises.length != 0 ? 
+					item.value.exercises.map((value) => {
+						return (
+							<RenderItemExercise
+								key={value._id}
+								value={value}
+								workoutId={item.value._id}
+							/>
+						)
+					}) :
+					<Text>No Exercises for this Workout</Text>
+				}
+			</List.Accordion>
+		)
+	}
 
 	const WorkoutAcordian = () => {
-
+		//console.log('--------------------');
 		try {
-
 			let workoutList = [];
 
 			events.workouts.forEach(workout => {
-				//console.log(workout);
-				//console.log('date ' + moment(selectedDate).isoWeekday() == 7 ? 0 : moment(selectedDate).isoWeekday());
-
-				//var index = workoutDone.length();
-				//setWorkoutDone([...workoutDone, false])
-
 				if (workout.weekly.includes(moment(selectedDate).day())) {
-
 					workoutList.push(
-						<List.Accordion title={workout.name} key={workout._id} expanded={true}>
-							<View style={styles.day} >
-								<View style={{
-									width: '15%', alignItems: 'center',
-									padding: 10,
-									borderRightColor: 'grey',
-									borderRightWidth: StyleSheet.hairlineWidth,
-								}}>
-									<Checkbox
-										status={false ? 'checked' : 'unchecked'}
-										onPress={() => {
-											console.log('checkbox ' + workout.name);
-											//setWorkoutDone()
-										}}
-									/>
-								</View>
-								<View style={[styles.allEvents, true ? { width: '65%', backgroundColor: 'lightgrey' } : {}]}>
-									<Text>Test</Text>
-								</View>
-								<View style={{ width: '20%', flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', backgroundColor: 'lightgrey' }}>
-									<IconButton
-										icon='settings'
-										onPress={() => console.log('settings')}
-									/>
-									<IconButton
-										icon='delete'
-										onPress={() => console.log('delete')}
-									/>
-								</View>
-							</View>
-						</List.Accordion>
+						<RenderItemWorkoutAccordian
+							key={workout._id}
+							value={workout}
+						/>
 					)
 				}
 			})
-
-
-			//console.log(workoutList.length)
 
 			if (workoutList.length == 0) {
 				return (<Text>No workouts</Text>);
@@ -205,10 +252,10 @@ export default function Calendar() {
 	}
 
 	/*const refreshData = () => {
-		setRefreshing(true);
+								setRefreshing(true);
 		ExerciseWorkout.getExercises()
 			.then((data) => {
-				setData(data);
+								setData(data);
 				setRefreshing(false);
 			});
 
@@ -362,7 +409,7 @@ export default function Calendar() {
 								label="Workout Name"
 								mode="outlined"
 								value={workoutName}
-								onChangeText={(text) => {setWorkoutName(text)}}
+								onChangeText={(text) => { setWorkoutName(text) }}
 							/>
 							<View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
 								<TextInput
@@ -466,14 +513,14 @@ export default function Calendar() {
 							console.log('------------------');
 							console.log(workoutName);
 							console.log(data.map(value => value.data));
-							console.log(repeatWeekly ? repeatingDays.map((val, index) => {if (val) return index}).filter((val) => val != undefined) : []); // convert array of booleans to array 
+							console.log(repeatWeekly ? repeatingDays.map((val, index) => { if (val) return index }).filter((val) => val != undefined) : []); // convert array of booleans to array 
 							console.log(workoutStartDate);
 							console.log(repeatWeekly ? endDate : null);
 
 							ExerciseWorkout.makeWorkout(
-								workoutName, 
+								workoutName,
 								data.map(value => value.data),
-								repeatWeekly ? repeatingDays.map((val, index) => {if (val) return index}).filter((val) => val != undefined) : [],
+								repeatWeekly ? repeatingDays.map((val, index) => { if (val) return index }).filter((val) => val != undefined) : [],
 								workoutStartDate,
 								repeatWeekly ? endDate : null
 							).then(() => {
@@ -490,11 +537,11 @@ export default function Calendar() {
 								hideWorkout();
 							});
 
-							
-							
-							
-							
-							
+
+
+
+
+
 						}}>Done</Button>
 					</Dialog.Actions>
 				</Dialog>
