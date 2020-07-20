@@ -1,5 +1,6 @@
 import StorageUtil from './Storage';
 import axios from 'axios';
+import moment from 'moment';
 
 const Storage = new StorageUtil();
 
@@ -101,8 +102,8 @@ export default class ExerciseWorkoutUtil {
 			name: name,
 			exercises: exercises,
 			weekly: weekly,
-			startDate: startDate,
-			endDate: endDate
+			startDate: moment(startDate).format('YYYY-MM-DD'),
+			endDate: moment(endDate).format('YYYY-MM-DD')
 		}, {
 			headers: {
 				'Access-Control-Allow-Origin': '*',
@@ -114,13 +115,29 @@ export default class ExerciseWorkoutUtil {
 	}
 
 
-	getExercisesDone = async (workout, date) => {
+	getWorkoutExercisesDone = async (workout, date) => {
 		var token = await Storage.getData('jwt');
 
 		var response = await axios.post(baseAPIURL + "/api/workout/getDoneExercises", {
 			token: token,
 			workout: workout,
-			date: date
+			date: moment(date).format('YYYY-MM-DD')
+		}, {
+			headers: {
+				'Access-Control-Allow-Origin': '*',
+			},
+			mode: 'cors'
+		})
+
+		return response.data;
+	}
+
+	getWorkoutsExercisesDone = async (date) => {
+		var token = await Storage.getData('jwt');
+
+		var response = await axios.post(baseAPIURL + "/api/workout/getAllDoneExercisesOnDate", {
+			token: token,
+			date: moment(date).format('YYYY-MM-DD')
 		}, {
 			headers: {
 				'Access-Control-Allow-Origin': '*',
@@ -137,14 +154,14 @@ export default class ExerciseWorkoutUtil {
 		var response = await axios.post(baseAPIURL + "/api/workout/markExercisesDone", {
 			token: token,
 			workout: workout,
-			date: date,
-			addDoneExercises: [exercise]
+			date: moment(date).format('YYYY-MM-DD'),
+			addDoneExercises: [exercise.toString()]
 		}, {
 			headers: {
 				'Access-Control-Allow-Origin': '*',
 			},
 			mode: 'cors'
-		}).then(console.log('marked done'))
+		})
 
 		return response.data;
 	}
@@ -155,14 +172,14 @@ export default class ExerciseWorkoutUtil {
 		var response = await axios.post(baseAPIURL + "/api/workout/markExercisesDone", {
 			token: token,
 			workout: workout,
-			date: date,
+			date: moment(date).format('YYYY-MM-DD'),
 			removeDoneExercises: [exercise]
 		}, {
 			headers: {
 				'Access-Control-Allow-Origin': '*',
 			},
 			mode: 'cors'
-		}).then(console.log('marked undone'))
+		})
 
 		return response.data;
 	}

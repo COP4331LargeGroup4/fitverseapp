@@ -6,7 +6,6 @@ import moment from 'moment';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 import ExerciseWorkoutUtil from './ExerciseWorkout';
-import { object } from 'yup';
 
 const ExerciseWorkout = new ExerciseWorkoutUtil();
 
@@ -75,122 +74,8 @@ export default function Calendar() {
 		}
 	}
 
-	var exercisesStatus = {};
-
-	function RenderItemExercise(item) {
-
-		
-
-		console.log(exercisesStatus);
-		console.log(exercisesStatus[item.value._id]);
-
-		if (exercisesStatus[item.value._id] != true) {
-			exercisesStatus[item.value._id] = false;
-			console.log('dne')
-		}
-
-		const [status, setStatus] = useState(exercisesStatus[item.value._id]);
-
-		
-
-		return (
-			<List.Item
-				title={item.value.name}
-				left={props => (
-					<Checkbox {...props}
-						status={status ? 'checked' : 'unchecked'}
-						onPress={() => {
-							if (status) {
-								ExerciseWorkout.unmarkExercisesDone(item.workoutId, selectedDate, item.value._id);
-								exercisesStatus[item.value._id] = false;
-								setStatus(false);
-							}
-							else {
-								ExerciseWorkout.markExercisesDone(item.workoutId, selectedDate, item.value._id);
-								exercisesStatus[item.value._id] = true;
-								setStatus(true);
-							}
-							console.log(exercisesStatus[item.value._id]);
-							
-						}}
-					/>
-				)}
-			/>
-		)
-	}
-
-	function RenderItemWorkoutAccordian(item) {
-
-		const [status, setStatus] = useState(true);
 
 
-		console.log(item.value._id);
-		console.log(selectedDate);
-		console.log('1------');
-		ExerciseWorkout.getExercisesDone(item.value._id, selectedDate)
-		.then(data => {
-			console.log(data);
-			data.doneExercises.forEach(key => {
-				console.log(key);
-				exercisesStatus[key] = true;
-				console.log(exercisesStatus);
-			})
-		});
-		console.log('2------');
-
-		return (
-			<List.Accordion
-				title={item.value.name}
-				expanded={status}
-				onPress={() => { setStatus(!status) }}
-			>
-				{item.value.exercises.length != 0 ? 
-					item.value.exercises.map((value) => {
-						return (
-							<RenderItemExercise
-								key={value._id}
-								value={value}
-								workoutId={item.value._id}
-							/>
-						)
-					}) :
-					<Text>No Exercises for this Workout</Text>
-				}
-			</List.Accordion>
-		)
-	}
-
-	const WorkoutAcordian = () => {
-		//console.log('--------------------');
-		try {
-			let workoutList = [];
-
-			events.workouts.forEach(workout => {
-				if (workout.weekly.includes(moment(selectedDate).day())) {
-					workoutList.push(
-						<RenderItemWorkoutAccordian
-							key={workout._id}
-							value={workout}
-						/>
-					)
-				}
-			})
-
-			if (workoutList.length == 0) {
-				return (<Text>No workouts</Text>);
-			}
-			return (workoutList);
-
-
-
-		}
-		catch {
-			return (
-				<Text>No workouts</Text>
-			)
-		}
-
-	}
 
 	const [repeatWeekly, setRepeatWeekly] = useState(true);
 	const [settingDate, setSettingDate] = useState('start');
@@ -342,7 +227,7 @@ export default function Calendar() {
 				selectedDate={selectedDate}
 			/>
 			<ScrollView style={styles.scrollView}>
-				<WorkoutAcordian />
+				<WorkoutAcordian selectedDate={selectedDate} events={events} />
 			</ScrollView>
 			<View style={{ flexDirection: 'row', justifyContent: 'space-evenly', margin: 10 }}>
 				<Button
@@ -536,18 +421,113 @@ export default function Calendar() {
 
 								hideWorkout();
 							});
-
-
-
-
-
-
 						}}>Done</Button>
 					</Dialog.Actions>
 				</Dialog>
 			</Portal>
 		</View>
 	)
+}
+
+
+
+
+function WorkoutAcordian(props) {
+	const [doneExercises, setDoneExercises] = useState(null);
+
+	const getDoneWorkouts = async () => {
+		var workouts = await ExerciseWorkout.getWorkoutsExercisesDone(props.selectedDate);
+
+		setDoneExercises(workouts.workouts.flatMap(x => x.exercises));
+	}
+
+	useEffect(() => {
+		setDoneExercises(null);
+		getDoneWorkouts();
+	}, [props.selectedDate]);
+
+
+	function RenderItemExercise(item) {
+
+		const [status, setStatus] = useState(item.done == null ? null : item.done.includes(item.value._id));
+
+		return (
+			<List.Item
+				title={item.value.name}
+				description={item.value.notes ? item.value.notes : null}
+				left={myprops => (
+					<Checkbox {...myprops}
+						status={status === null ? 'indeterminate' : (status ? 'checked' : 'unchecked')}
+						onPress={() => {
+							if (status) {
+								ExerciseWorkout.unmarkExercisesDone(item.workoutId, props.selectedDate, item.value._id);
+							}
+							else {
+								ExerciseWorkout.markExercisesDone(item.workoutId, props.selectedDate, item.value._id);
+							}
+
+							setStatus(!status);
+						}}
+					/>
+				)}
+			/>
+		)
+	}
+
+	function RenderItemWorkoutAccordian(item) {
+
+		const [accordionState, setAccordionState] = useState(true);
+		const [status, setStatus] = useState(true);
+
+
+		return (
+			<List.Accordion
+				title={item.value.name}
+				expanded={accordionState}
+				onPress={() => { setAccordionState(!accordionState) }}
+			>
+				{item.value.exercises.length != 0 ?
+					item.value.exercises.map((value) => {
+						return (
+							<RenderItemExercise
+								key={value._id}
+								value={value}
+								workoutId={item.value._id}
+								done={item.done}
+							/>
+						)
+					}) :
+					<Text>No Exercises for this Workout</Text>
+				}
+			</List.Accordion>
+		)
+	}
+
+	try {
+		let workoutList = [];
+
+		props.events.workouts.forEach(workout => {
+			if (workout.weekly.includes(moment(props.selectedDate).day())) {
+				workoutList.push(
+					<RenderItemWorkoutAccordian
+						key={workout._id}
+						value={workout}
+						done={doneExercises}
+					/>
+				)
+			}
+		})
+
+		if (workoutList.length == 0) {
+			return (<Text>No workouts</Text>);
+		}
+		return (workoutList);
+	}
+	catch {
+		return (<Text>No workouts</Text>);
+	}
+
+
 }
 
 
