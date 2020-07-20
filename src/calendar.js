@@ -449,7 +449,7 @@ function WorkoutAcordian(props) {
 
 	function RenderItemExercise(item) {
 
-		const [status, setStatus] = useState(item.done == null ? null : item.done.includes(item.value._id));
+		const [status, setStatus] = useState(item.doneExercises == null ? null : item.doneExercises.includes(item.value._id));
 
 		return (
 			<List.Item
@@ -477,29 +477,53 @@ function WorkoutAcordian(props) {
 	function RenderItemWorkoutAccordian(item) {
 
 		const [accordionState, setAccordionState] = useState(true);
-		const [status, setStatus] = useState(true);
+		const [status, setStatus] = useState(item.value.doneDates.findIndex(date => (moment.utc(date).diff(moment.utc(props.selectedDate), 'days') == 0)) != -1);
 
+		console.log(item);
+		console.log(moment.utc(item.value.doneDates[0]));
+		console.log(moment.utc(item.value.doneDates[0]).diff(moment.utc(props.selectedDate), 'days') == 0);
 
 		return (
-			<List.Accordion
-				title={item.value.name}
-				expanded={accordionState}
-				onPress={() => { setAccordionState(!accordionState) }}
-			>
-				{item.value.exercises.length != 0 ?
-					item.value.exercises.map((value) => {
-						return (
-							<RenderItemExercise
-								key={value._id}
-								value={value}
-								workoutId={item.value._id}
-								done={item.done}
-							/>
-						)
-					}) :
-					<Text>No Exercises for this Workout</Text>
-				}
-			</List.Accordion>
+			<View style={styles.container, {flexDirection:'row', justifyContent: 'center'}}>
+				<View style={{width:'10%', height:55, alignItems:'center', justifyContent:'center', marginLeft:20}}>
+					<Checkbox
+						status={status ? 'checked' : 'unchecked'}
+						onPress={()=>{
+							if (status) {
+								ExerciseWorkout.unmarkWorkoutDone(item.value._id, props.selectedDate);
+							}
+							else {
+								ExerciseWorkout.markWorkoutDone(item.value._id, props.selectedDate);
+							}
+
+							setStatus(!status)
+						}}
+					/>
+				</View>
+				
+				<View style={{width:'90%'}}>
+					<List.Accordion
+						title={item.value.name}
+						expanded={accordionState}
+						onPress={() => { setAccordionState(!accordionState) }}
+						style={{flex:1, width:'100%', alignSelf:'flex-end'}}
+					>
+						{item.value.exercises.length != 0 ?
+							item.value.exercises.map((value) => {
+								return (
+									<RenderItemExercise
+										key={value._id}
+										value={value}
+										workoutId={item.value._id}
+										doneExercises={item.doneExercises}
+									/>
+								)
+							}) :
+							<Text>No Exercises for this Workout</Text>
+						}
+					</List.Accordion>
+				</View>
+			</View>
 		)
 	}
 
@@ -512,7 +536,7 @@ function WorkoutAcordian(props) {
 					<RenderItemWorkoutAccordian
 						key={workout._id}
 						value={workout}
-						done={doneExercises}
+						doneExercises={doneExercises}
 					/>
 				)
 			}
@@ -521,7 +545,7 @@ function WorkoutAcordian(props) {
 		if (workoutList.length == 0) {
 			return (<Text>No workouts</Text>);
 		}
-		return (workoutList);
+		return (<View style={styles.container}>{workoutList}</View>);
 	}
 	catch {
 		return (<Text>No workouts</Text>);

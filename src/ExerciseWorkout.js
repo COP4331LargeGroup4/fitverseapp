@@ -148,6 +148,42 @@ export default class ExerciseWorkoutUtil {
 		return response.data;
 	}
 
+
+	markWorkoutDone = async (workout, date) => {
+		var token = await Storage.getData('jwt');
+
+		var response = await axios.post(baseAPIURL + "/api/workout/update", {
+			token: token,
+			id: workout,
+			addDoneDates: [moment(date).format('YYYY-MM-DD').toString()]
+		}, {
+			headers: {
+				'Access-Control-Allow-Origin': '*',
+			},
+			mode: 'cors'
+		})
+
+		return response.data;
+	}
+
+	unmarkWorkoutDone = async (workout, date) => {
+		var token = await Storage.getData('jwt');
+
+		var response = await axios.post(baseAPIURL + "/api/workout/update", {
+			token: token,
+			id: workout,
+			removeDoneDates: [moment(date).format('YYYY-MM-DD').toString()]
+		}, {
+			headers: {
+				'Access-Control-Allow-Origin': '*',
+			},
+			mode: 'cors'
+		})
+
+		return response.data;
+	}
+
+
 	markExercisesDone = async (workout, date, exercise) => {
 		var token = await Storage.getData('jwt');
 
