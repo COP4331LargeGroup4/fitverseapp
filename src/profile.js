@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { View, Dimensions, TouchableWithoutFeedback } from 'react-native';
+import { View, Dimensions } from 'react-native';
 import YoutubePlayer from 'react-native-youtube-iframe';
-import { TextInput, Button, IconButton } from 'react-native-paper';
+import { TextInput, Button, IconButton, HelperText } from 'react-native-paper';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import axios from 'axios';
@@ -77,7 +77,7 @@ export default function Profile() {
 				}}
 			>
 				{({ handleChange, handleBlur, handleSubmit, isSubmitting, touched, values, errors }) => (
-					<>
+					<View style={{margin:10}}>
 						<TextInput
 							label="First Name"
 							onChangeText={handleChange('firstname')}
@@ -86,8 +86,8 @@ export default function Profile() {
 							mode='outlined'
 							error={touched.firstname && errors.firstname}
 							disabled={isSubmitting}
-							style={{margin:10}}
 						/>
+						<HelperText type="error" visible={touched.firstname && errors.firstname}>{touched.firstname && errors.firstname}</HelperText>
 
 						<TextInput
 							label="Last Name"
@@ -97,8 +97,8 @@ export default function Profile() {
 							mode='outlined'
 							error={touched.lastname && errors.lastname}
 							disabled={isSubmitting}
-							style={{margin:10}}
 						/>
+						<HelperText type="error" visible={touched.lastname && errors.lastname}>{touched.lastname && errors.lastname}</HelperText>
 
 						<TextInput
 							label="Email Address"
@@ -108,19 +108,19 @@ export default function Profile() {
 							mode='outlined'
 							error={touched.email && errors.email}
 							disabled={true}
-							style={{margin:10}}
 						/>
+						<HelperText type="error" visible={false}>i shouldnt be here</HelperText>
 
 						<Button
 							onPress={handleSubmit}
 							mode='contained'
 							disabled={!errors}
 							loading={isSubmitting}
-							style={{margin:10}}
+							
 						>
 							Submit
 						</Button>
-					</>
+					</View>
 				)}
 			</Formik>
 		</>
