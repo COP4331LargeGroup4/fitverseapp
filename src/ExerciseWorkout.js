@@ -4,14 +4,12 @@ import moment from 'moment';
 
 const Storage = new StorageUtil();
 
-const baseAPIURL = 'https://fitverse.herokuapp.com';
-
 export default class ExerciseWorkoutUtil {
 
 	getExercises = async () => {
 		var token = await Storage.getData('jwt');
 
-		var response = await axios.post(baseAPIURL + "/api/exercise/readAll", {
+		var response = await axios.post(global.baseAPIURL + "/api/exercise/readAll", {
 			token: token,
 		}, {
 			headers: {
@@ -26,7 +24,7 @@ export default class ExerciseWorkoutUtil {
 	makeExercise = async (name, notes) => {
 		var token = await Storage.getData('jwt');
 
-		var response = await axios.post(baseAPIURL + "/api/exercise/create", {
+		var response = await axios.post(global.baseAPIURL + "/api/exercise/create", {
 			token: token,
 			name: name,
 			notes: notes
@@ -43,7 +41,7 @@ export default class ExerciseWorkoutUtil {
 	updateExercise = async (id, name, notes) => {
 		var token = await Storage.getData('jwt');
 
-		var response = await axios.post(baseAPIURL + "/api/exercise/update", {
+		var response = await axios.post(global.baseAPIURL + "/api/exercise/update", {
 			token: token,
 			id: id,
 			name: name,
@@ -61,7 +59,7 @@ export default class ExerciseWorkoutUtil {
 	deleteExercise = async (id) => {
 		var token = await Storage.getData('jwt');
 
-		var response = await axios.post(baseAPIURL + "/api/exercise/delete", {
+		var response = await axios.post(global.baseAPIURL + "/api/exercise/delete", {
 			token: token,
 			id: id,
 		}, {

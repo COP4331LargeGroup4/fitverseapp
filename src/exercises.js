@@ -1,6 +1,6 @@
 import React, { Component, useState, useEffect, useRef } from 'react';
 import { Text, View, StyleSheet, Alert, FlatList, ScrollView, RefreshControl } from 'react-native';
-import { Checkbox, IconButton, Button, List, Portal, Dialog, Paragraph, TextInput } from 'react-native-paper';
+import { Checkbox, IconButton, Button, List, Portal, Dialog, ActivityIndicator, TextInput } from 'react-native-paper';
 
 import ExerciseWorkoutUtil from './ExerciseWorkout';
 import { mixed } from 'yup';
@@ -226,7 +226,7 @@ export default function Exercises() {
 	}
 
 	try {
-		if (data != null) {
+		if (data.exercises.length !== 0) {
 			return (
 				<>
 					<ScrollView
@@ -262,7 +262,7 @@ export default function Exercises() {
 	}
 	catch {
 		return (
-			<Text>No exercises, why dont you make some?</Text>
+			<ActivityIndicator animating={true} size='large' style={{height:'100%',display:"flex",justifyContent:"center",alignItems: "center"}} />
 		)
 	}
 

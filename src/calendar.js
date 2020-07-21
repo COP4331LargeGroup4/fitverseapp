@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Text, View, StyleSheet, Picker, ScrollView } from 'react-native';
-import { Checkbox, IconButton, Button, List, Portal, Dialog, TextInput, Title, Switch, ToggleButton } from 'react-native-paper';
+import { Checkbox, IconButton, Button, List, Portal, Dialog, TextInput, Title, Switch, ActivityIndicator } from 'react-native-paper';
 import CalendarStrip from 'react-native-calendar-strip';
 import moment from 'moment';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -233,13 +233,6 @@ export default function Calendar() {
 				<Button
 					style={{ width: '40%' }}
 					mode={"contained"}
-					onPress={showExercise}
-				>
-					Add Exercise
-				</Button>
-				<Button
-					style={{ width: '40%' }}
-					mode={"contained"}
 					onPress={showWorkout}
 				>
 					Add Workout
@@ -395,13 +388,6 @@ export default function Calendar() {
 					</Dialog.Content>
 					<Dialog.Actions>
 						<Button onPress={() => {
-							console.log('------------------');
-							console.log(workoutName);
-							console.log(data.map(value => value.data));
-							console.log(repeatWeekly ? repeatingDays.map((val, index) => { if (val) return index }).filter((val) => val != undefined) : []); // convert array of booleans to array 
-							console.log(workoutStartDate);
-							console.log(repeatWeekly ? endDate : null);
-
 							ExerciseWorkout.makeWorkout(
 								workoutName,
 								data.map(value => value.data),
@@ -417,8 +403,7 @@ export default function Calendar() {
 								setRepeatingDays([false, false, false, false, false, false, false]);
 								setWorkoutStartDate(new Date());
 								setWorkoutEndDate(new Date());
-
-
+								
 								hideWorkout();
 							});
 						}}>Done</Button>
@@ -479,16 +464,12 @@ function WorkoutAcordian(props) {
 		const [accordionState, setAccordionState] = useState(true);
 		const [status, setStatus] = useState(item.value.doneDates.findIndex(date => (moment.utc(date).diff(moment.utc(props.selectedDate), 'days') == 0)) != -1);
 
-		console.log(item);
-		console.log(moment.utc(item.value.doneDates[0]));
-		console.log(moment.utc(item.value.doneDates[0]).diff(moment.utc(props.selectedDate), 'days') == 0);
-
 		return (
-			<View style={styles.container, {flexDirection:'row', justifyContent: 'center'}}>
-				<View style={{width:'10%', height:55, alignItems:'center', justifyContent:'center', marginLeft:20}}>
+			<View style={styles.container, { flexDirection: 'row', justifyContent: 'center' }}>
+				<View style={{ width: '10%', height: 55, alignItems: 'center', justifyContent: 'center', marginLeft: 20 }}>
 					<Checkbox
 						status={status ? 'checked' : 'unchecked'}
-						onPress={()=>{
+						onPress={() => {
 							if (status) {
 								ExerciseWorkout.unmarkWorkoutDone(item.value._id, props.selectedDate);
 							}
@@ -500,13 +481,13 @@ function WorkoutAcordian(props) {
 						}}
 					/>
 				</View>
-				
-				<View style={{width:'90%'}}>
+
+				<View style={{ width: '90%' }}>
 					<List.Accordion
 						title={item.value.name}
 						expanded={accordionState}
 						onPress={() => { setAccordionState(!accordionState) }}
-						style={{flex:1, width:'100%', alignSelf:'flex-end'}}
+						style={{ flex: 1, width: '100%', alignSelf: 'flex-end' }}
 					>
 						{item.value.exercises.length != 0 ?
 							item.value.exercises.map((value) => {
@@ -548,7 +529,7 @@ function WorkoutAcordian(props) {
 		return (<View style={styles.container}>{workoutList}</View>);
 	}
 	catch {
-		return (<Text>No workouts</Text>);
+		return (<ActivityIndicator animating={true} size='large' style={{height:'100%',display:"flex",justifyContent:"center",alignItems: "center"}} />);
 	}
 
 

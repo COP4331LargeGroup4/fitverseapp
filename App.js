@@ -9,15 +9,26 @@ import Exercises from './src/exercises';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import axios from 'axios';
-import { Provider as PaperProvider } from 'react-native-paper';
+import { DefaultTheme, Provider as PaperProvider } from 'react-native-paper';
 import StorageUtil from './src/Storage';
 
 const Storage = new StorageUtil();
 
-// also used in ExerciseWorkout.js
-const baseAPIURL = 'https://fitverse.herokuapp.com';
+global.baseAPIURL = 'https://fitverse.herokuapp.com';
 
 //<Image source={require('./assets/logo.png')} style={{ alignContent:'center', resizeMode:'center', width: (width * .8) }} />
+
+const theme = {
+	...DefaultTheme,
+	roundness: 2,
+	colors: {
+		...DefaultTheme.colors,
+		primary: '#416165',
+		accent: '#ACB0BD',
+		background: '#FFFFFF'
+	},
+};
+
 
 const DashboardRoute = () =>
 	<View style={styles.container}>
@@ -31,21 +42,16 @@ const DashboardRoute = () =>
 
 	</View >;
 
-const CalendarRoute = () =>
-	<View style={styles.container}>
-		<Text>Test</Text>
-	</View >;
-
 const ExercisesRoute = () =>
 	<View style={styles.container}>
 		<Exercises />
 	</View >;
 
 const ProfileRoute = () =>
-	<View >
+	<View style={{ flex:1, height:'100%'}}>
 		<Profile />
-		<Button icon="alert-octagon" mode="contained" onPress={Storage.clearData}>
-			Test
+		<Button icon="alert-octagon" mode="contained" onPress={Storage.clearData} style={{width:'40%', alignSelf: 'center', position:'absolute', bottom: 0, margin:10 }}>
+			Log Out
 		</Button>
 	</View >;
 
@@ -54,14 +60,12 @@ const Dashboard = () => {
 	const [index, setIndex] = React.useState(0);
 	const [routes] = React.useState([
 		{ key: 'dashboard', title: 'Dashboard', icon: 'home' },
-		{ key: 'calendar', title: 'Calendar', icon: 'calendar' },
-		{ key: 'exercises', title: 'My Exercises', icon: 'weight' },
+		{ key: 'exercises', title: 'My Exercises', icon: 'dumbbell' },
 		{ key: 'profile', title: 'Profile', icon: 'account' }, // TODO: Change to https://materialdesignicons.com/icon/account-cowboy-hat
 	]);
 
 	const renderScene = BottomNavigation.SceneMap({
 		dashboard: DashboardRoute,
-		calendar: CalendarRoute,
 		exercises: ExercisesRoute,
 		profile: ProfileRoute,
 	});
@@ -86,7 +90,7 @@ const styles = StyleSheet.create({
 	}
 });
 
-const WelcomePage = ({jwt}) => {
+const WelcomePage = ({ jwt }) => {
 	const [pageState, setPageState] = useState('signin');
 
 	const [email, setEmail] = useState(null);
@@ -137,7 +141,7 @@ const WelcomePage = ({jwt}) => {
 	);
 }
 
-const SignInForm = ({jwt}) => {
+const SignInForm = ({ jwt }) => {
 	const [sending, setSending] = useState(false);
 
 	return (
@@ -154,7 +158,7 @@ const SignInForm = ({jwt}) => {
 			onSubmit={values => {
 				setSending(true);
 				let creds = { email: values.email, password: values.password };
-				axios.post(baseAPIURL + '/api/user/login', creds)
+				axios.post(global.baseAPIURL + '/api/user/login', creds)
 					.then((data) => {
 						Storage.setData('usercreds', JSON.stringify(creds));
 						Storage.setData('jwt', data.data.token);
@@ -187,8 +191,8 @@ const SignInForm = ({jwt}) => {
 						disabled={sending}
 					/>
 					<HelperText type="error" visible={touched.password && errors.password}>{touched.password && errors.password}</HelperText>
-					<Button 
-						onPress={handleSubmit} 
+					<Button
+						onPress={handleSubmit}
 						mode='contained'
 						disabled={!errors}
 						loading={sending}
@@ -201,7 +205,7 @@ const SignInForm = ({jwt}) => {
 	)
 }
 
-const SignUpForm = ({jwt}) => {
+const SignUpForm = ({ jwt }) => {
 	const [sending, setSending] = useState(false);
 
 	return (
@@ -221,7 +225,7 @@ const SignUpForm = ({jwt}) => {
 			})}
 			onSubmit={values => {
 				setSending(true);
-				axios.post(baseAPIURL + '/api/user/signup', { firstName: values.firstname, lastName: values.lastname, email: values.email, password: values.password })
+				axios.post(global.baseAPIURL + '/api/user/signup', { firstName: values.firstname, lastName: values.lastname, email: values.email, password: values.password })
 					.then((data) => {
 						Storage.setData('usercreds', JSON.stringify({ email: values.email, password: values.password }))
 						Storage.setData('jwt', data.data.token);
@@ -314,11 +318,10 @@ const SignUpForm = ({jwt}) => {
 }
 
 const SilentLogin = (email, password) => {
-	axios.post(baseAPIURL + '/api/user/login', { email: email, password: password })
+	axios.post(global.baseAPIURL + '/api/user/login', { email: email, password: password })
 		.then((data) => {
-			//console.log(data.data); 
-			//console.log("token " + data.data.token)
-			Storage.setData('jwt', data.data.token)
+			Storage.setData('jwt', data.data.token);
+			Storage.setData('user', JSON.stringify(data.data.user));
 			return data;
 		})
 		.catch((data) => console.log(data));
@@ -330,10 +333,10 @@ const App = () => {
 	const setJWTfunc = (token) => setJWT(token);
 
 	//const usercreds = JSON.stringify({email:'',password:''});
-	
+
 	//Storage.clearData();
 
-	const getUsercreds = async() => {
+	const getUsercreds = async () => {
 		let creds = await Storage.getData('usercreds');
 
 		return (creds === null ? null : JSON.parse(creds))
@@ -341,8 +344,7 @@ const App = () => {
 
 	useEffect(() => {
 		getUsercreds().then((data) => {
-			if (data === null)
-			{
+			if (data === null) {
 				setJWT(-1);
 			}
 			else {
@@ -353,14 +355,14 @@ const App = () => {
 				setJWT(token);
 			}
 		});
-	}, [] );
+	}, []);
 
 	return (
-		<PaperProvider>
+		<PaperProvider theme={theme}>
 			<SafeAreaView style={SafeViewAndroid.AndroidSafeArea}>
-				{jwt === null ? <ActivityIndicator animating={true} size='large' style={{height:'100%',display:"flex",justifyContent:"center",alignItems: "center"}} /> 
-					: (jwt <= -1 ? <WelcomePage jwt={setJWTfunc}/> : <Dashboard />)}
-				
+				{jwt === null ? <ActivityIndicator animating={true} size='large' style={{ height: '100%', display: "flex", justifyContent: "center", alignItems: "center" }} />
+					: (jwt <= -1 ? <WelcomePage jwt={setJWTfunc} /> : <Dashboard />)}
+
 			</SafeAreaView>
 		</PaperProvider>
 	)
