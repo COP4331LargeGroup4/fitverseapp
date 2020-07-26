@@ -80,7 +80,7 @@ export default function Exercises() {
 							ExerciseWorkout.makeExercise(name, notes)
 								.then(ret => {
 									// Make copy of data
-									var dataCopy = [...data];
+									var dataCopy = {...data};
 
 									// Add new exercise to data array
 									dataCopy.exercises.push(ret.exercise);

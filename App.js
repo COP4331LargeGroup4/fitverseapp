@@ -177,7 +177,6 @@ const App = () => {
 							Storage.setData('jwt', data.data.token);
 							Storage.setData('user', JSON.stringify(data.data.user));
 							setJWTfunc(data.data.token);
-							console.log(data.data.token)
 						})
 						.catch((data) => console.log(data));
 				}}

@@ -1,5 +1,4 @@
 import { StyleSheet, Platform, StatusBar } from "react-native";
-import { Dimensions } from "react-native";
 
 export default StyleSheet.create({
 	AndroidSafeArea: {

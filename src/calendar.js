@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Text, View, StyleSheet, Picker, ScrollView } from 'react-native';
+import { Text, View, StyleSheet, Picker, ScrollView, RefreshControl } from 'react-native';
 import { Checkbox, IconButton, Button, List, Portal, Dialog, TextInput, Title, Switch, ActivityIndicator } from 'react-native-paper';
 import CalendarStrip from 'react-native-calendar-strip';
 import moment from 'moment';
@@ -122,7 +122,6 @@ export default function Calendar() {
 	};
 
 	const [addWorkoutState, setAddWorkoutState] = useState('info');
-	const [workoutExercises, setWorkoutExercises] = useState([]);
 
 	const [workoutName, setWorkoutName] = useState('');
 
@@ -136,15 +135,17 @@ export default function Calendar() {
 		setExercises(ex);
 	}
 
-	/*const refreshData = () => {
-								setRefreshing(true);
+	const [refreshing, setRefreshing] = useState(false);
+
+	const refreshData = () => {
+		setRefreshing(true);
 		ExerciseWorkout.getExercises()
 			.then((data) => {
 								setData(data);
 				setRefreshing(false);
 			});
 
-	}*/
+	}
 
 	useEffect(() => {
 		getExercises();
@@ -226,7 +227,11 @@ export default function Calendar() {
 				customDatesStyles={customDateStyleFunc}
 				selectedDate={selectedDate}
 			/>
-			<ScrollView style={styles.scrollView}>
+			<ScrollView 
+				style={styles.scrollView}
+				refreshControl={
+					<RefreshControl refreshing={refreshing} onRefresh={refreshData} />
+				}>
 				<WorkoutAcordian selectedDate={selectedDate} events={events} />
 			</ScrollView>
 			<View style={{ flexDirection: 'row', justifyContent: 'space-evenly', margin: 10 }}>
