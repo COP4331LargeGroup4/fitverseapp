@@ -153,7 +153,7 @@ export default class ExerciseWorkoutUtil {
 		var response = await axios.post(baseAPIURL + "/api/workout/update", {
 			token: token,
 			id: workout,
-			addDoneDates: [moment(date).format('YYYY-MM-DD').toString()]
+			addDoneDates: [moment.utc(date).format('YYYY-MM-DD').toString()]
 		}, {
 			headers: {
 				'Access-Control-Allow-Origin': '*',
@@ -170,7 +170,7 @@ export default class ExerciseWorkoutUtil {
 		var response = await axios.post(baseAPIURL + "/api/workout/update", {
 			token: token,
 			id: workout,
-			removeDoneDates: [moment(date).format('YYYY-MM-DD').toString()]
+			removeDoneDates: [moment.utc(date).format('YYYY-MM-DD').toString()]
 		}, {
 			headers: {
 				'Access-Control-Allow-Origin': '*',

@@ -16,9 +16,9 @@ export default function Calendar() {
 	const EndDateRef = useRef(null);
 
 	var numDaysInWeek = 7;
-	var startDate = moment().startOf('week');
-	var endDate = moment().add(numDaysInWeek, 'days');
-	const today = moment().format('YYYY-MM-DD');
+	var startDate = moment.utc().startOf('week');
+	var endDate = moment.utc().add(numDaysInWeek, 'days');
+	const today = moment.utc().format('YYYY-MM-DD');
 
 	const [events, setEvents] = useState();
 
@@ -53,7 +53,7 @@ export default function Calendar() {
 
 		try {
 			events.workouts.forEach(workout => {
-				if (workout.weekly.includes(moment(date).day())) {
+				if (workout.weekly.includes(moment.utc(date).day())) {
 					dots = [...dots, { color: "#000000", selectedColor: "#333333" }];
 				}
 			})
@@ -67,7 +67,7 @@ export default function Calendar() {
 	}
 
 	const customDateStyleFunc = date => {
-		if (moment(date).format('YYYY-MM-DD') == today) {
+		if (moment.utc(date).format('YYYY-MM-DD') == today) {
 			return {
 				dateContainerStyle: { backgroundColor: "#CCCCCC" },
 			}
@@ -126,6 +126,7 @@ export default function Calendar() {
 	const [workoutName, setWorkoutName] = useState('');
 
 	const [data, setData] = useState([]);
+	
 	const [key, setKey] = useState(0);
 
 	const [exercises, setExercises] = useState();
@@ -137,11 +138,12 @@ export default function Calendar() {
 
 	const [refreshing, setRefreshing] = useState(false);
 
-	const refreshData = () => {
+	const refreshData = async () => {
 		setRefreshing(true);
+
 		ExerciseWorkout.getExercises()
 			.then((data) => {
-								setData(data);
+				setData(data);
 				setRefreshing(false);
 			});
 
@@ -222,7 +224,7 @@ export default function Calendar() {
 				startingDate={startDate}
 				useIsoWeekday={false}
 				daySelectionAnimation={{ type: 'border', duration: 0, borderWidth: 1, borderHighlightColor: 'black' }}
-				onDateSelected={(date) => { setSelectedDate(date) }}
+				onDateSelected={(date) => { setSelectedDate(moment.utc(date)) }}
 				markedDates={markedDatesFunc}
 				customDatesStyles={customDateStyleFunc}
 				selectedDate={selectedDate}
@@ -423,16 +425,18 @@ export default function Calendar() {
 
 
 function WorkoutAcordian(props) {
+
 	const [doneExercises, setDoneExercises] = useState(null);
 
 	const getDoneWorkouts = async () => {
+		setDoneExercises(null);
+	
 		var workouts = await ExerciseWorkout.getWorkoutsExercisesDone(props.selectedDate);
-
+	
 		setDoneExercises(workouts.workouts.flatMap(x => x.exercises));
 	}
 
 	useEffect(() => {
-		setDoneExercises(null);
 		getDoneWorkouts();
 	}, [props.selectedDate]);
 
@@ -467,7 +471,7 @@ function WorkoutAcordian(props) {
 	function RenderItemWorkoutAccordian(item) {
 
 		const [accordionState, setAccordionState] = useState(true);
-		const [status, setStatus] = useState(item.value.doneDates.findIndex(date => (moment.utc(date).diff(moment.utc(props.selectedDate), 'days') == 0)) != -1);
+		const [status, setStatus] = useState(item.value.doneDates.includes(moment.utc(props.selectedDate).toISOString()));
 
 		return (
 			<View style={styles.container, { flexDirection: 'row', justifyContent: 'center' }}>
@@ -517,7 +521,7 @@ function WorkoutAcordian(props) {
 		let workoutList = [];
 
 		props.events.workouts.forEach(workout => {
-			if (workout.weekly.includes(moment(props.selectedDate).day())) {
+			if (workout.weekly.includes(moment.utc(props.selectedDate).day())) {
 				workoutList.push(
 					<RenderItemWorkoutAccordian
 						key={workout._id}
