@@ -141,6 +141,8 @@ export default function Calendar() {
 	const refreshData = async () => {
 		setRefreshing(true);
 
+		
+
 		ExerciseWorkout.getExercises()
 			.then((data) => {
 				setData(data);
@@ -479,6 +481,8 @@ function WorkoutAcordian(props) {
 					<Checkbox
 						status={status ? 'checked' : 'unchecked'}
 						onPress={() => {
+							console.log(item.value._id);
+							console.log(props.selectedDate);
 							if (status) {
 								ExerciseWorkout.unmarkWorkoutDone(item.value._id, props.selectedDate);
 							}

@@ -168,7 +168,7 @@ const App = () => {
 						.min(8, "Password must contain at least 8 character")
 						.required("Password is required"),
 				})}
-				onSubmit={values => {
+				onSubmit={(values, actions) => {
 					setSending(true);
 					let creds = { email: values.email, password: values.password };
 					axios.post(global.baseAPIURL + '/api/user/login', creds)
@@ -178,7 +178,13 @@ const App = () => {
 							Storage.setData('user', JSON.stringify(data.data.user));
 							setJWTfunc(data.data.token);
 						})
-						.catch((data) => console.log(data));
+						.catch((data) => {
+							setSending(false);
+							actions.setErrors({
+								email:'email or password is incorrect',
+								password:'email or password is incorrect'
+							})
+						});
 				}}
 			>
 				{({ handleChange, handleBlur, handleSubmit, touched, values, errors }) => (
@@ -236,7 +242,7 @@ const App = () => {
 						.min(8, "Password must contain at least 8 character")
 						.required("Password is required"),
 				})}
-				onSubmit={values => {
+				onSubmit={(values, actions) => {
 					setSending(true);
 					axios.post(global.baseAPIURL + '/api/user/signup', { firstName: values.firstname, lastName: values.lastname, email: values.email, password: values.password })
 						.then((data) => {
@@ -246,9 +252,32 @@ const App = () => {
 							setJWTfunc(data.data.token);
 							setSending(false);
 						})
-						.catch((data) => {
-							console.log(data);
+						.catch((err) => {
+							const errMsg = err.response.data.err;
 							setSending(false);
+
+							if (errMsg === "User already exists") {
+								actions.setErrors({
+									email:errMsg
+								})
+							}
+							else if (errMsg === "Please enter all fields") {
+								actions.setErrors({
+									firstname:errMsg,
+									lastname:errMsg,
+									email:errMsg,
+									password:errMsg
+								})
+							}
+							else {
+								actions.setErrors({
+									firstname:' ',
+									lastname:' ',
+									email:'Something went wrong',
+									password:' '
+								})
+							}
+							
 						});
 				}}
 			>
@@ -337,7 +366,9 @@ const App = () => {
 				Storage.setData('user', JSON.stringify(data.data.user));
 				return data;
 			})
-			.catch((data) => console.log(data));
+			.catch((data) => {
+				return(null);
+			});
 	}
 
 	const getUsercreds = async () => {
